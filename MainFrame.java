@@ -36,7 +36,7 @@ public class MainFrame extends JFrame {
         JButton consumeButton = new JButton("Consume");
         JButton startButton = new JButton("Start");
         JButton FinishButton = new JButton("Finish");
-        // JTable tableQueueTable;
+        JTable circleQueue;
 
         buttonPanel.add(produceButton);
         buttonPanel.add(consumeButton);
@@ -88,14 +88,13 @@ public class MainFrame extends JFrame {
         }
         });
         
-        FinishButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e){
-                table.finishWork();
-                taskQueueTable.setModel(new QueueModel(taskQueue));
-                waitQueueTable.setModel(new QueueModel(table.getWaitQueue()));
-                System.out.println("@");
-            }
-        });
+        // FinishButton.addActionListener(new ActionListener() {
+        //     public void actionPerformed(ActionEvent e){
+        //         taskQueueTable.setModel(new QueueModel(taskQueue));
+        //         waitQueueTable.setModel(new QueueModel(table.getWaitQueue()));
+        //         System.out.println("@");
+        //     }
+        // });
         startButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (!taskQueue.isEmpty()) {
@@ -103,17 +102,31 @@ public class MainFrame extends JFrame {
                 if (task == 'P') {
                     Thread provider = new Thread(new Producer(table));
                     provider.start();
-                    waitingList.append("Produced\n");
+                    // waitingList.append("Produced\n");
                 } else if (task == 'C') {
                     Thread consumer = new Thread(new Consumer(table));
                     consumer.start();
-                    waitingList.append("Consumed\n");
+                    // waitingList.append("Consumed\n");
                 }
             } else {
                 waitingList.append("No tasks in queue\n");
             }
             // 버튼을 누를 때마다 업데이트
-            // tableQueueTable.setModel(new QueueTable(table.getQueue()));
+            // circleQueue.setModel(new QueueTable(table.getQueue()));
+            for (int i = 0; i < 4; i++) {
+                waitingList.append(table.getQueue()[i] + " ");
+
+            }
+            waitingList.append("\n");
+           
+            for (int i = 0; i < table.getCapacity(); i++) {
+                JPanel circlePanel = (JPanel) queuePanel.getComponent(i);
+                if (table.getQueue()[i] != null) {
+                    circlePanel.setBackground(Color.GREEN);
+                } else {
+                    circlePanel.setBackground(Color.WHITE);
+                }
+            }
             taskQueueTable.setModel(new QueueModel(taskQueue));
             waitQueueTable.setModel(new QueueModel(table.getWaitQueue()));
             // String waitQueueString = "";
@@ -124,14 +137,7 @@ public class MainFrame extends JFrame {
 
             // Update the circles to represent the state of table.queue
             JPanel queuePanel = (JPanel) getContentPane().getComponent(2);
-            for (int i = 0; i < table.getCapacity(); i++) {
-                JPanel circlePanel = (JPanel) queuePanel.getComponent(i);
-                if (table.getQueue()[i] != null) {
-                    circlePanel.setBackground(Color.GREEN);
-                } else {
-                    circlePanel.setBackground(Color.WHITE);
-                }
-            }
+            
         }
         });
 
@@ -160,11 +166,11 @@ public class MainFrame extends JFrame {
 // add(scrollPane, BorderLayout.CENTER);
 
 // JTable taskQueueTable = new JTable(new QueueModel(taskQueue));
-// JTable tableQueueTable = new JTable(new QueueModel(table.getQueue()));
+// JTable circleQueue = new JTable(new QueueModel(table.getQueue()));
 // JTable waitQueueTable = new JTable(new QueueModel(table.getWaitQueue()));
 
 // JScrollPane taskQueueScrollPane = new JScrollPane(taskQueueTable);
-// JScrollPane tableQueueScrollPane = new JScrollPane(tableQueueTable);
+// JScrollPane tableQueueScrollPane = new JScrollPane(circleQueue);
 // JScrollPane waitQueueScrollPane = new JScrollPane(waitQueueTable);
 
 // add(taskQueueScrollPane, BorderLayout.WEST);
@@ -206,7 +212,7 @@ public class MainFrame extends JFrame {
 //             waitingList.append("No tasks in queue\n");
 //         }
 //         // 버튼을 누를 때마다 업데이트
-//         tableQueueTable.setModel(new QueueModel(table.getQueue()));
+//         circleQueue.setModel(new QueueModel(table.getQueue()));
 //         waitQueueTable.setModel(new QueueModel(table.getWaitQueue()));
 //         String waitQueueString = "";
 //         for (char c : table.getWaitQueue()) {
@@ -399,10 +405,10 @@ public class MainFrame extends JFrame {
 //     add(scrollPane, BorderLayout.CENTER);
 
 //     JTable taskQueueTable = new JTable(new QueueModel(taskQueue));
-//     JTable tableQueueTable = new JTable(new QueueModel(table.getQueue()));
+//     JTable circleQueue = new JTable(new QueueModel(table.getQueue()));
 
 // JScrollPane taskQueueScrollPane = new JScrollPane(taskQueueTable);
-// JScrollPane tableQueueScrollPane = new JScrollPane(tableQueueTable);
+// JScrollPane tableQueueScrollPane = new JScrollPane(circleQueue);
 
 // add(taskQueueScrollPane, BorderLayout.WEST);
 // add(tableQueueScrollPane, BorderLayout.CENTER);

@@ -8,7 +8,7 @@ public class Table {
     private int head;
     private int tail;
     private int productCount;
-    // private int sleepSeconds = 1;
+    private static int sleepSeconds;
     private Queue<Character> waitQueue;
     private boolean isDone;
 
@@ -17,6 +17,16 @@ public class Table {
         queue = new String[capacity];
         waitQueue = new LinkedList<Character>();
         isDone = false;
+        sleepSeconds = 1;
+    }
+    // public void done(){
+    //     isDone = true;
+    // }
+    public void notDone(){
+        isDone = false;
+    }
+    public boolean getIsDone(){
+        return isDone;
     }
     public int getCapacity() {
         return this.capacity;
@@ -35,10 +45,9 @@ public class Table {
         return waitQueue;
     }
 
-    public void finishWork(){
-        isDone = true;
-        notify();
-    }
+    // public void finishWork(){
+    //     isDone = true;
+    // }
     // 큐에서 값을 하나 빼내는 메소드
     public synchronized String consume() throws InterruptedException {
         while (productCount <= 0) {
@@ -53,12 +62,12 @@ public class Table {
         tail = (tail + 1) % queue.length;
         productCount--;
         System.out.println("Consuming "+message+"...");
-        while(!isDone){
-            // Thread.sleep(sleepSeconds * 100);
-        }
+        // while(!isDone){
+        Thread.sleep(sleepSeconds * 1000);
+        // }
         System.out.println("Consumed "+message);
         notify();
-        isDone = false;
+        isDone = true;
         return message;
     }
 
@@ -77,9 +86,9 @@ public class Table {
         head = (head + 1) % queue.length;
         productCount++;
         System.out.println("Producing "+message+"...");
-        while(!isDone){
-            // Thread.sleep(sleepSeconds * 100);
-        }
+        // while(!isDone){
+        Thread.sleep(sleepSeconds * 1000);
+        // }
         System.out.println("Produced " + message);
         isDone = false;
         notify();
