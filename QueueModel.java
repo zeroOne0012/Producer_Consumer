@@ -4,10 +4,15 @@ import javax.swing.table.AbstractTableModel;
 
 class QueueModel extends AbstractTableModel {
     private Queue<Character> queue;
-    public QueueModel(Queue<Character> queue) {
+    private String title;
+    public QueueModel(Queue<Character> queue, String title) {
         this.queue = queue;
+        this.title = title;
     }
     
+    public String getColumnName(int col) {
+        return title;
+    }
     public int getColumnCount() {
         return 1;
     }

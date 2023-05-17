@@ -1,3 +1,57 @@
+import java.util.Scanner;
+public class Main {
+    public static void main(String[] args) {  //wait queue 해결, ui 정리하면 끝?
+        // Table table = new Table(4);
+        
+        // Scanner sc = new Scanner(System.in);
+        // int choice;
+        MainFrame mf = new MainFrame();
+        Thread changeDetector = new Thread(new ChangeDetector(mf));
+        changeDetector.start();
+
+
+        Scanner sc = new Scanner(System.in);
+        int choice;
+        System.out.println("1: print_queue\n2: print_waitQueue\n4: break");
+        while (true) {
+            choice = sc.nextInt();
+            switch (choice) {
+
+                case 1:
+                    mf.tempGetTable().printQueue();
+                    break;
+                    case 2:
+                    mf.tempGetTable().printWaitQueue();
+                    break;
+            }
+            if (choice == 4)
+                break;
+        }
+        sc.close();
+    }
+}
+        // System.out.println("1: produce\n2: consume\n3: print_queue\n4: break");
+        // while (true) {
+        //     choice = sc.nextInt();
+        //     switch (choice) {
+        //         case 1:
+        //             Thread provider = new Thread(new Producer(table));
+        //             provider.start();
+        //             break;
+        //         case 2:
+        //             Thread consumer = new Thread(new Consumer(table));
+        //             consumer.start();
+        //             break;
+        //         case 3:
+        //             table.printQueue();
+        //             break;
+        //     }
+        //     if (choice == 4)
+        //         break;
+        // }
+        // sc.close();
+
+
 // import javax.swing.*;
 // import java.awt.*;
 // import java.awt.event.ActionEvent;
@@ -60,36 +114,7 @@
 //         }
 //     }
 // }
-import java.util.Scanner;
-public class Main {
-    public static void main(String[] args) {
-        // Table table = new Table(4);
-        
-        // Scanner sc = new Scanner(System.in);
-        // int choice;
-        new MainFrame();
-        // System.out.println("1: produce\n2: consume\n3: print_queue\n4: break");
-        // while (true) {
-        //     choice = sc.nextInt();
-        //     switch (choice) {
-        //         case 1:
-        //             Thread provider = new Thread(new Producer(table));
-        //             provider.start();
-        //             break;
-        //         case 2:
-        //             Thread consumer = new Thread(new Consumer(table));
-        //             consumer.start();
-        //             break;
-        //         case 3:
-        //             table.printQueue();
-        //             break;
-        //     }
-        //     if (choice == 4)
-        //         break;
-        // }
-        // sc.close();
-    }
-}
+
 
 //////////////////////////
 

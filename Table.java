@@ -10,30 +10,27 @@ public class Table {
     private int productCount;
     private static int sleepSeconds;
     private Queue<Character> waitQueue;
-    private boolean isDone;
 
     public Table(int capacity) {
         this.capacity = capacity;
         queue = new String[capacity];
         waitQueue = new LinkedList<Character>();
-        isDone = false;
         sleepSeconds = 1;
     }
-    // public void done(){
-    //     isDone = true;
-    // }
-    public void notDone(){
-        isDone = false;
-    }
-    public boolean getIsDone(){
-        return isDone;
-    }
+    
     public int getCapacity() {
         return this.capacity;
     }
     public void printQueue() {
         System.out.printf("queue: ");
         for (String i : queue) {
+        System.out.printf(i + " ");
+        }
+        System.out.println();
+    }
+    public void printWaitQueue() {
+        System.out.printf("waitQueue: ");
+        for (char i : waitQueue) {
         System.out.printf(i + " ");
         }
         System.out.println();
@@ -45,9 +42,7 @@ public class Table {
         return waitQueue;
     }
 
-    // public void finishWork(){
-    //     isDone = true;
-    // }
+
     // 큐에서 값을 하나 빼내는 메소드
     public synchronized String consume() throws InterruptedException {
         while (productCount <= 0) {
@@ -61,13 +56,14 @@ public class Table {
         queue[tail] = null;
         tail = (tail + 1) % queue.length;
         productCount--;
+
+        Flags.somethingChanged++;
         System.out.println("Consuming "+message+"...");
         // while(!isDone){
         Thread.sleep(sleepSeconds * 1000);
         // }
         System.out.println("Consumed "+message);
         notify();
-        isDone = true;
         return message;
     }
 
@@ -85,12 +81,11 @@ public class Table {
         queue[head] = message;
         head = (head + 1) % queue.length;
         productCount++;
+
+        Flags.somethingChanged++;
         System.out.println("Producing "+message+"...");
-        // while(!isDone){
         Thread.sleep(sleepSeconds * 1000);
-        // }
         System.out.println("Produced " + message);
-        isDone = false;
         notify();
     }
 }
