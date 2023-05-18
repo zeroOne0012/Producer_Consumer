@@ -1,39 +1,25 @@
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.util.LinkedList;
 import java.util.Queue;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-
-
-import java.util.LinkedList;
+                                                    //message 출력, 원 그리기, 색칠, 테두리 없는 테이블?
 public class MainFrame extends JFrame {
 
     private Table table;
     private JTextArea waitingList;
     private Queue<Character> taskQueue;
     private JTable taskQueueTable;
-    private JTable waitQueueTable;
     private JPanel queuePanel;
     private JScrollPane scrollPane;
     private JScrollPane taskQueueScrollPane;
-    private JScrollPane waitQueueScrollPane;
     private int tableSize;
     
-                public Table debugTable(){
-                    return table;
-                }
+    public Table debugTable(){
+        return table;
+    }
     public MainFrame() {
         setTitle("Producer-Consumer");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -75,11 +61,6 @@ public class MainFrame extends JFrame {
         taskQueueScrollPane.setPreferredSize(new Dimension(150, 0));
         add(taskQueueScrollPane, BorderLayout.WEST);
 
-        // waitqueue: 대기열(미구현)
-        waitQueueTable = new JTable(new QueueModel(table.getWaitQueue(), "test2"));
-        waitQueueScrollPane = new JScrollPane(waitQueueTable);
-        waitQueueScrollPane.setPreferredSize(new Dimension(150, 0));
-        add(waitQueueScrollPane, BorderLayout.EAST);
 
 
         produceButton.addActionListener(new ActionListener() {
@@ -105,27 +86,14 @@ public class MainFrame extends JFrame {
         });
         startButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            if(Flags.isWorking){
-                waitingList.append("someone is working...\n");
-                return;
-            }
             if (!taskQueue.isEmpty()) {
                 char task = taskQueue.poll();
                 if (task == 'P') {
-                    // Flags.ISDONE = false;
-                    Flags.workingPerson = 'P';
-                    Thread provider = new Thread(new Producer(table));
-                    provider.start();
-                    // waitingList.append("Produced\n");
+                    Thread producer = new Thread(new Produce(table));
+                    producer.start();
                 } else if (task == 'C') {
-                    // Flags.ISDONE = false;
-                    //진입 가능한지(size)여기서 확인, wait 판별도 여기서?
-                    //누가 작업중인지@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                    //message 출력, 원 그리기, 색칠, 테두리 없는 테이블?
-                    Flags.workingPerson = 'C';
-                    Thread consumer = new Thread(new Consumer(table));
+                    Thread consumer = new Thread(new Consume(table));
                     consumer.start();
-                    // waitingList.append("Consumed\n");
                 }
             } else {
                 waitingList.append("No tasks in queue\n");
@@ -158,17 +126,15 @@ public class MainFrame extends JFrame {
         for (int i = 0; i < tableSize; i++) {
             JPanel circlePanel = (JPanel) queuePanel.getComponent(i);
             if (table.getBuffer()[i] != null) {
-                if(Flags.isWorking && Flags.workingSpace==i){
-                    if(Flags.workingPerson=='C')
-                        circlePanel.setBackground(Color.ORANGE);
-
-                    else
+                if(table.personInBuffer!=null && Flags.workingSpace==i){
+                    if(table.personInBuffer.equals(Table.PRODUCER))
                         circlePanel.setBackground(Color.RED);
+                    else
+                        circlePanel.setBackground(Color.ORANGE);
                     circlePanel.add(new JLabel(table.getBuffer()[i]));
-
                 }
                 else{
-                    if(Flags.isWorking)
+                    if(table.personInBuffer!=null)
                     circlePanel.setBackground(Color.GRAY);
                     else 
                     circlePanel.setBackground(Color.GREEN);
@@ -178,7 +144,7 @@ public class MainFrame extends JFrame {
             }
         }
         taskQueueTable.setModel(new QueueModel(taskQueue, "test"));
-        waitQueueTable.setModel(new QueueModel(table.getWaitQueue(), "test2"));
+        // waitQueueTable.setModel(new QueueModel(table.getWaitQueue(), "test2"));
     }
 }
 // public MainFrame() {

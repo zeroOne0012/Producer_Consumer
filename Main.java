@@ -21,7 +21,11 @@ public class Main {
                     mf.debugTable().printQueue();
                     break;
                     case 2:
-                    mf.debugTable().printWaitQueue();
+                    System.out.println("nrfull" + mf.debugTable().getNrfull().toString());
+                    System.out.println("nrempty" + mf.debugTable().getNremptry().toString());
+                    System.out.println("mutexP" + mf.debugTable().getMutexP().toString());
+                    System.out.println("mutexC" + mf.debugTable().getMutexC().toString());
+
                     break;
             }
             if (choice == 4)
