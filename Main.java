@@ -18,10 +18,10 @@ public class Main {
             switch (choice) {
 
                 case 1:
-                    mf.tempGetTable().printQueue();
+                    mf.debugTable().printQueue();
                     break;
                     case 2:
-                    mf.tempGetTable().printWaitQueue();
+                    mf.debugTable().printWaitQueue();
                     break;
             }
             if (choice == 4)

@@ -29,7 +29,7 @@ public class MainFrame extends JFrame {
     private JScrollPane taskQueueScrollPane;
     private JScrollPane waitQueueScrollPane;
     
-                public Table tempGetTable(){
+                public Table debugTable(){
                     return table;
                 }
     public MainFrame() {
@@ -55,9 +55,9 @@ public class MainFrame extends JFrame {
         scrollPane = new JScrollPane(waitingList);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Create a JPanel with four circles to represent the state of table.queue
+        // queuepanel: 원형 버퍼
         queuePanel = new JPanel();
-        queuePanel.setLayout(new GridLayout(1, 4));
+        queuePanel.setLayout(new GridLayout(2, 2));
         for (int i = 0; i < table.getCapacity(); i++) {
             JPanel circlePanel = new JPanel();
             circlePanel.setPreferredSize(new Dimension(50, 50));
@@ -66,13 +66,13 @@ public class MainFrame extends JFrame {
         }
         add(queuePanel, BorderLayout.SOUTH);
 
-    // Create JTable for task queue
+        // taskqueue: 작업 명단
         taskQueueTable = new JTable(new QueueModel(taskQueue, "test"));
         taskQueueScrollPane = new JScrollPane(taskQueueTable);
         taskQueueScrollPane.setPreferredSize(new Dimension(150, 0));
         add(taskQueueScrollPane, BorderLayout.WEST);
 
-        // Create JTable for wait queue
+        // waitqueue: 대기열(미구현)
         waitQueueTable = new JTable(new QueueModel(table.getWaitQueue(), "test2"));
         waitQueueScrollPane = new JScrollPane(waitQueueTable);
         waitQueueScrollPane.setPreferredSize(new Dimension(150, 0));
@@ -136,9 +136,9 @@ public class MainFrame extends JFrame {
         }
         });
 
-    setVisible(true);
+        setVisible(true);
     }
-    public void renew(){
+    public void renew(){ //갱신
         for (int i = 0; i < 4; i++) {
             waitingList.append(table.getQueue()[i] + " ");
 
