@@ -3,17 +3,16 @@ public class ChangeDetector implements Runnable{
     private MainFrame main;
     public ChangeDetector(MainFrame main){
         this.main = main;
-        changeTemp = Flags.somethingChanged;
+        changeTemp = main.debugTable().getChanged();
     }
     @Override
     public void run() {
         while(true){
-            if(changeTemp != Flags.somethingChanged){
+            int t = main.debugTable().getChanged();
+            if(changeTemp != t){
                 //
                 main.renew();
-
-                Flags.somethingChanged = Flags.somethingChanged%100;
-                changeTemp = Flags.somethingChanged;
+                changeTemp = t;
             }
             try {
                 Thread.sleep(100);

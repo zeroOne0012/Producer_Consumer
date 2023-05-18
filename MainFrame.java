@@ -10,6 +10,7 @@ import java.util.Queue;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -28,6 +29,7 @@ public class MainFrame extends JFrame {
     private JScrollPane scrollPane;
     private JScrollPane taskQueueScrollPane;
     private JScrollPane waitQueueScrollPane;
+    private int tableSize;
     
                 public Table debugTable(){
                     return table;
@@ -37,7 +39,8 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 500);
         setLayout(new BorderLayout());
-        table = new Table(4);
+        table = new Table();
+        tableSize = table.getSIZE();
         taskQueue = new LinkedList();
         JPanel buttonPanel = new JPanel();
         JButton produceButton = new JButton("Produce");
@@ -58,7 +61,7 @@ public class MainFrame extends JFrame {
         // queuepanel: 원형 버퍼
         queuePanel = new JPanel();
         queuePanel.setLayout(new GridLayout(2, 2));
-        for (int i = 0; i < table.getCapacity(); i++) {
+        for (int i = 0; i < tableSize; i++) {
             JPanel circlePanel = new JPanel();
             circlePanel.setPreferredSize(new Dimension(50, 50));
             circlePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -97,7 +100,7 @@ public class MainFrame extends JFrame {
         
         FinishButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
-                Flags.stop = true;
+                table.finish();
             }
         });
         startButton.addActionListener(new ActionListener() {
@@ -147,29 +150,29 @@ public class MainFrame extends JFrame {
     }
     public void renew(){ //갱신
         for (int i = 0; i < 4; i++) {
-            waitingList.append(table.getQueue()[i] + " ");
+            waitingList.append(table.getBuffer()[i] + " ");
 
         }
         waitingList.append("\n");
        
-        for (int i = 0; i < table.getCapacity(); i++) {
+        for (int i = 0; i < tableSize; i++) {
             JPanel circlePanel = (JPanel) queuePanel.getComponent(i);
-            if (table.getQueue()[i] != null) {
-                if(Flags.isWorking && Flags.workingSpace==i)
+            if (table.getBuffer()[i] != null) {
+                if(Flags.isWorking && Flags.workingSpace==i){
                     if(Flags.workingPerson=='C')
-                    circlePanel.setBackground(Color.ORANGE);
+                        circlePanel.setBackground(Color.ORANGE);
 
                     else
-                    circlePanel.setBackground(Color.RED);
+                        circlePanel.setBackground(Color.RED);
+                    circlePanel.add(new JLabel(table.getBuffer()[i]));
+
+                }
                 else{
                     if(Flags.isWorking)
                     circlePanel.setBackground(Color.GRAY);
                     else 
                     circlePanel.setBackground(Color.GREEN);
                 }
-
-
-                    
             } else {
                 circlePanel.setBackground(Color.WHITE);
             }
