@@ -51,18 +51,29 @@ public class Table {
             if (productCount > 0)
                 waitQueue.poll();
         }
+        Flags.isWorking = true;
+        Flags.workingSpace = tail;
 
         String message = queue[tail];
+
+        Flags.somethingChanged++; //작업이 들어옴 (ui갱신)
+
+
+
+        System.out.println("Consuming "+message+"...");
+        while(!Flags.stop){
+            Thread.sleep(sleepSeconds * 100);
+        }
+        Flags.stop = false;
+        
+        System.out.println("Consumed "+message);
         queue[tail] = null;
+
         tail = (tail + 1) % queue.length;
         productCount--;
-
-        Flags.somethingChanged++;
-        System.out.println("Consuming "+message+"...");
-        // while(!isDone){
-        Thread.sleep(sleepSeconds * 1000);
-        // }
-        System.out.println("Consumed "+message);
+        Flags.isWorking = false;
+        Flags.workingPerson = null;
+        Flags.somethingChanged++; //작업이 끝남
         notify();
         return message;
     }
@@ -77,15 +88,26 @@ public class Table {
             if (productCount < 0)
                 waitQueue.poll();
         }
+        Flags.isWorking = true;
+        Flags.workingSpace = head;
         String message = "m" + (int) (Math.random() * 20);
         queue[head] = message;
+
+
+        Flags.somethingChanged++; //작업이 들어옴
+        System.out.println("Producing "+message+"...");
+        while(!Flags.stop){
+            Thread.sleep(sleepSeconds * 100);
+        }
+        Flags.stop = false;
+        System.out.println("Produced " + message);
+
         head = (head + 1) % queue.length;
         productCount++;
 
-        Flags.somethingChanged++;
-        System.out.println("Producing "+message+"...");
-        Thread.sleep(sleepSeconds * 1000);
-        System.out.println("Produced " + message);
+        Flags.isWorking = false;
+        Flags.workingPerson = null;
+        Flags.somethingChanged++; //작업이 끝남
         notify();
     }
 }

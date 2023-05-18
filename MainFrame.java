@@ -95,24 +95,31 @@ public class MainFrame extends JFrame {
         }
         });
         
-        // FinishButton.addActionListener(new ActionListener() {
-        //     public void actionPerformed(ActionEvent e){
-        //         taskQueueTable.setModel(new QueueModel(taskQueue));
-        //         waitQueueTable.setModel(new QueueModel(table.getWaitQueue()));
-        //         System.out.println("@");
-        //     }
-        // });
+        FinishButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                Flags.stop = true;
+            }
+        });
         startButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
+            if(Flags.isWorking){
+                waitingList.append("someone is working...\n");
+                return;
+            }
             if (!taskQueue.isEmpty()) {
                 char task = taskQueue.poll();
                 if (task == 'P') {
-                    Flags.ISDONE = false;
+                    // Flags.ISDONE = false;
+                    Flags.workingPerson = 'P';
                     Thread provider = new Thread(new Producer(table));
                     provider.start();
                     // waitingList.append("Produced\n");
                 } else if (task == 'C') {
-                    Flags.ISDONE = false;
+                    // Flags.ISDONE = false;
+                    //진입 가능한지(size)여기서 확인, wait 판별도 여기서?
+                    //누가 작업중인지@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                    //message 출력, 원 그리기, 색칠, 테두리 없는 테이블?
+                    Flags.workingPerson = 'C';
                     Thread consumer = new Thread(new Consumer(table));
                     consumer.start();
                     // waitingList.append("Consumed\n");
@@ -148,7 +155,21 @@ public class MainFrame extends JFrame {
         for (int i = 0; i < table.getCapacity(); i++) {
             JPanel circlePanel = (JPanel) queuePanel.getComponent(i);
             if (table.getQueue()[i] != null) {
-                circlePanel.setBackground(Color.GREEN);
+                if(Flags.isWorking && Flags.workingSpace==i)
+                    if(Flags.workingPerson=='C')
+                    circlePanel.setBackground(Color.ORANGE);
+
+                    else
+                    circlePanel.setBackground(Color.RED);
+                else{
+                    if(Flags.isWorking)
+                    circlePanel.setBackground(Color.GRAY);
+                    else 
+                    circlePanel.setBackground(Color.GREEN);
+                }
+
+
+                    
             } else {
                 circlePanel.setBackground(Color.WHITE);
             }
