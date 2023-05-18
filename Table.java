@@ -72,16 +72,14 @@ public class Table {
         Task wakeup = sem.V();
         if(wakeup!=null){
             somethingChanged++;
-            try{
-                if(wakeup.getName().contains(PRODUCER)){
-                    produce(wakeup);
-                } else if(wakeup.getName().contains(CONSUMER)){
-                    consume(wakeup);
-                } else{
-                    System.out.println("String Error");
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if(wakeup.getName().contains(PRODUCER)){
+                Thread produce = new Thread(new Produce(this, wakeup));
+                produce.start();
+            } else if(wakeup.getName().contains(CONSUMER)){
+                Thread consume = new Thread(new Consume(this, wakeup));
+                consume.start();
+            } else{
+                System.out.println("String Error");
             }
         }
     }

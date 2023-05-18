@@ -10,14 +10,12 @@ public class ChangeDetector implements Runnable{
         while(true){
             int t = main.debugTable().getChanged();
             if(changeTemp != t){
-                //
-                main.renew();
                 changeTemp = t;
+                main.renew();
             }
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }

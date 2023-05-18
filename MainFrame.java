@@ -34,10 +34,14 @@ public class MainFrame extends JFrame {
         JButton startButton = new JButton("Start");
         JButton FinishButton = new JButton("Finish");
 
+                            JButton Refresh = new JButton("Refresh");
+
         buttonPanel.add(produceButton);
         buttonPanel.add(consumeButton);
         buttonPanel.add(startButton);
         buttonPanel.add(FinishButton);
+                            buttonPanel.add(Refresh);
+
         add(buttonPanel, BorderLayout.NORTH);
 
         waitingList = new JTextArea();
@@ -62,7 +66,11 @@ public class MainFrame extends JFrame {
         add(taskQueueScrollPane, BorderLayout.WEST);
 
 
-
+                        Refresh.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e){
+                                renew();
+                            }
+                        });
         produceButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             taskQueue.add('P');
@@ -89,11 +97,11 @@ public class MainFrame extends JFrame {
             if (!taskQueue.isEmpty()) {
                 char task = taskQueue.poll();
                 if (task == 'P') {
-                    Thread producer = new Thread(new Produce(table));
-                    producer.start();
+                    Thread produce = new Thread(new Produce(table));
+                    produce.start();
                 } else if (task == 'C') {
-                    Thread consumer = new Thread(new Consume(table));
-                    consumer.start();
+                    Thread consume = new Thread(new Consume(table));
+                    consume.start();
                 }
             } else {
                 waitingList.append("No tasks in queue\n");
