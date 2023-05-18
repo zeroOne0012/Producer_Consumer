@@ -10,7 +10,6 @@ public class Consume implements Runnable {
         this.table = table;
         this.task = task;
     }
-
     @Override
     public void run() {
         try {

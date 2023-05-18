@@ -42,13 +42,6 @@ public class Table {
         }
         System.out.println();
     }
-    // public void printWaitQueue() {    지워도 됨
-    //     System.out.printf("waitQueue: ");
-    //     for (char i : waitQueue) {
-    //     System.out.printf(i + " ");
-    //     }
-    //     System.out.println();
-    // }
     public String[] getBuffer(){
         return buffer;
     }
@@ -164,67 +157,4 @@ public class Table {
 
         return message;
     }
-
-    
 }
-// public class Table {
-// private int capacity;
-// private String[] queue;
-// private int head;
-// private int tail;
-// private int productCount;
-// private int sleepSeconds;
-// private char[] taskArray;
-
-// public Table(int capacity) {
-//     this.capacity = capacity;
-//     queue = new String[capacity];
-//     taskArray = new char[capacity];
-// }
-
-// public synchronized void produce() throws InterruptedException {
-
-//     String message = "m" + (int) (Math.random() * 20);
-//     while (productCount >= queue.length) {
-//         wait();
-//     }
-//     queue[head] = message;
-//     taskArray[head] = 'P';
-//     head = (head + 1) % queue.length;
-//     productCount++;
-
-//     notify();
-// }
-
-// public synchronized String consume() throws InterruptedException {
-//     while (productCount <= 0) {
-//         wait();
-//     }
-
-//     String message = queue[tail];
-//     taskArray[tail] = 'C';
-//     queue[tail] = null;
-//     tail = (tail + 1) % queue.length;
-//     productCount--;
-
-//     notify();
-
-//     return message;
-// }
-
-// public void printQueue() {
-//     System.out.printf("queue: ");
-//     for (String i : queue) {
-//         System.out.printf(i + " ");
-//     }
-//     System.out.println();
-// }
-
-// public int getCapacity() {
-//     return this.capacity;
-// }
-
-// public char[] getTaskArray() {
-//     return this.taskArray;
-// }
-// }

@@ -2,7 +2,7 @@ import java.util.Queue;
 
 import javax.swing.table.AbstractTableModel;
 
-class QueueModel extends AbstractTableModel {
+class QueueModel extends AbstractTableModel { // x?
     private Queue<Character> queue;
     private String title;
     public QueueModel(Queue<Character> queue, String title) {
