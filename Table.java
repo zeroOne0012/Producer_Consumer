@@ -16,7 +16,8 @@ public class Table {
     private int tail; // 소비될 물건의 인덱스
     private int productCount; // 버퍼 내의 물건 개수
     private int sleepSeconds = 1;
-    private boolean stop = false; // 생산 또는 소비 중단 플래그
+    private boolean _finishProducing = false; // true: 생산 작업 finish
+    private boolean _finishConsuming = false; // true: 소비 작업 finish
     private int somethingChanged = 0; // 변화를 ChangeDetector class에서 감지
     
     private boolean _producerIsInside = false;
@@ -72,8 +73,11 @@ public class Table {
         return mutexC.getWaitingQueue();
     }
 
-    public void finish(){
-        stop=true;
+    public void finishProducing(){
+        _finishProducing=true;
+    }
+    public void finishConsuming(){
+        _finishConsuming=true;
     }
     private void OperationV(MySemaphore sem){
         Task wakeup = sem.V();
@@ -116,10 +120,10 @@ public class Table {
 
         somethingChanged++; //생산이 시작됨
         System.out.println("Producing "+message+"...");
-        while(!stop){
+        while(!_finishProducing){
             Thread.sleep(sleepSeconds * 100);
         }
-        stop = false;
+        _finishProducing = false;
         System.out.println("Produced " + message);
 
         head = (head + 1) % buffer.length;
@@ -154,10 +158,10 @@ public class Table {
 
         somethingChanged++; //소비가 시작됨 (ui갱신)
         System.out.println("Consuming "+message+"...");
-        while(!stop){
+        while(!_finishConsuming){
             Thread.sleep(sleepSeconds * 100);
         } //
-        stop = false;
+        _finishConsuming = false;
         System.out.println("Consumed "+message);
         buffer[tail] = null;
         tail = (tail + 1) % buffer.length;

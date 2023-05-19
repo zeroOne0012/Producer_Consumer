@@ -23,7 +23,7 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         setTitle("Producer-Consumer");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 500);
+        setSize(800, 500);
         setLayout(new BorderLayout());
         table = new Table();
         tableSize = table.getSIZE();
@@ -32,15 +32,14 @@ public class MainFrame extends JFrame {
         JButton produceButton = new JButton("Produce");
         JButton consumeButton = new JButton("Consume");
         JButton startButton = new JButton("Start");
-        JButton FinishButton = new JButton("Finish");
-
-                            JButton Refresh = new JButton("Refresh");
+        JButton finish_producing = new JButton("Finish producing");
+        JButton finish_consuming = new JButton("Finish consuming");
 
         buttonPanel.add(produceButton);
         buttonPanel.add(consumeButton);
         buttonPanel.add(startButton);
-        buttonPanel.add(FinishButton);
-                            buttonPanel.add(Refresh);
+        buttonPanel.add(finish_producing);
+        buttonPanel.add(finish_consuming);
 
         add(buttonPanel, BorderLayout.NORTH);
 
@@ -65,12 +64,6 @@ public class MainFrame extends JFrame {
         taskQueueScrollPane.setPreferredSize(new Dimension(150, 0));
         add(taskQueueScrollPane, BorderLayout.WEST);
 
-
-                        Refresh.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e){
-                                renew();
-                            }
-                        });
         produceButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             taskQueue.add('P');
@@ -87,9 +80,14 @@ public class MainFrame extends JFrame {
         }
         });
         
-        FinishButton.addActionListener(new ActionListener() {
+        finish_producing.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
-                table.finish();
+                table.finishProducing();
+            }
+        });
+        finish_consuming.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                table.finishConsuming();
             }
         });
         startButton.addActionListener(new ActionListener() {
