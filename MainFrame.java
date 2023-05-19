@@ -5,6 +5,10 @@ import java.awt.event.ActionListener;
 
 import java.util.LinkedList;
 import java.util.Queue;
+
+interface ChangeListener{
+    void somethingChanged();
+}
                                                     //message 출력, 원 그리기, 색칠, 테두리 없는 테이블?
 public class MainFrame extends JFrame {
 
@@ -40,6 +44,12 @@ public class MainFrame extends JFrame {
         buttonPanel.add(startButton);
         buttonPanel.add(finish_producing);
         buttonPanel.add(finish_consuming);
+
+        table.addChangeListener(new ChangeListener(){
+            public void somethingChanged(){
+                renew();
+            }
+        });
 
         add(buttonPanel, BorderLayout.NORTH);
 
@@ -82,11 +92,13 @@ public class MainFrame extends JFrame {
         
         finish_producing.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
-                table.finishProducing();
+                if(table.producerIsInside())
+                    table.finishProducing();
             }
         });
         finish_consuming.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e){
+                if(table.consumerIsInside())
                 table.finishConsuming();
             }
         });

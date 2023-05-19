@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 public class Table {
@@ -18,10 +20,11 @@ public class Table {
     private int sleepSeconds = 1;
     private boolean _finishProducing = false; // true: 생산 작업 finish
     private boolean _finishConsuming = false; // true: 소비 작업 finish
-    private int somethingChanged = 0; // 변화를 ChangeDetector class에서 감지
     
     private boolean _producerIsInside = false;
     private boolean _consumerIsInside = false;
+
+    private List<ChangeListener> listeners;
 
 
     public Table() {
@@ -30,11 +33,10 @@ public class Table {
         nrempty = new MySemaphore(SIZE);
         mutexP = new MySemaphore(1);
         mutexC = new MySemaphore(1);
+        listeners = new ArrayList<>();
     }
     
-    public int getChanged(){
-        return somethingChanged;
-    }
+
     public int getSIZE() {
         return this.SIZE;
     }
@@ -79,10 +81,19 @@ public class Table {
     public void finishConsuming(){
         _finishConsuming=true;
     }
+    public void addChangeListener(ChangeListener listener){
+        listeners.add(listener);
+    }
+    private void notifyListeners(){
+        for (ChangeListener listener : listeners) {
+            listener.somethingChanged();
+        }
+    }
+
     private void OperationV(MySemaphore sem){
         Task wakeup = sem.V();
         if(wakeup!=null){
-            somethingChanged++;
+            notifyListeners();
             if(wakeup.getName().contains(PRODUCER)){
                 Thread produce = new Thread(new Produce(this, wakeup));
                 produce.start();
@@ -100,13 +111,13 @@ public class Table {
 
         // A
         if(producer.getState()==Task.FIRST_TIME && !mutexP.P(producer)){
-            somethingChanged++;
+            notifyListeners();
             return;
         }
 
         // B
         if((producer.getState()==Task.FIRST_TIME || producer.getState()==Task.MUTEX_CHECKED) && !nrempty.P(producer)){
-            somethingChanged++;
+            notifyListeners();
             return;
         }
 
@@ -118,8 +129,9 @@ public class Table {
         buffer[head] = message;
 
 
-        somethingChanged++; //생산이 시작됨
+        notifyListeners(); //생산이 시작됨
         System.out.println("Producing "+message+"...");
+        _finishProducing = false;
         while(!_finishProducing){
             Thread.sleep(sleepSeconds * 100);
         }
@@ -130,7 +142,7 @@ public class Table {
         productCount++;
 
         _producerIsInside = false;
-        somethingChanged++; //생산이 끝남
+        notifyListeners(); //생산이 끝남
         OperationV(nrfull);
         OperationV(mutexP);
     }
@@ -140,13 +152,13 @@ public class Table {
 
         // A
         if(consumer.getState()==Task.FIRST_TIME && !mutexC.P(consumer)){
-            somethingChanged++;
+            notifyListeners();
             return null;
         } // consumer 상호 배제 검사
 
         // B
         if((consumer.getState()==Task.FIRST_TIME || consumer.getState()==Task.MUTEX_CHECKED) && !nrfull.P(consumer)){
-            somethingChanged++;
+            notifyListeners();
             return null;
         } // 소비할 상품 유무 검사
 
@@ -156,20 +168,20 @@ public class Table {
 
         String message = buffer[tail];
 
-        somethingChanged++; //소비가 시작됨 (ui갱신)
+        notifyListeners(); //소비가 시작됨 (ui갱신)
         System.out.println("Consuming "+message+"...");
+        _finishConsuming = false;
         while(!_finishConsuming){
             Thread.sleep(sleepSeconds * 100);
-        } //
+        } 
         _finishConsuming = false;
         System.out.println("Consumed "+message);
         buffer[tail] = null;
         tail = (tail + 1) % buffer.length;
         productCount--;
-        somethingChanged++; //소비가 끝남
 
         _consumerIsInside=false;
-        
+        notifyListeners(); //소비가 끝남
         OperationV(nrempty);
         OperationV(mutexC);
 

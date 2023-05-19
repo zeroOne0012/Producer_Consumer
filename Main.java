@@ -2,8 +2,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {  
         MainFrame mf = new MainFrame();
-        Thread changeDetector = new Thread(new ChangeDetector(mf));
-        changeDetector.start();
+        // Thread changeDetector = new Thread(new ChangeDetector(mf));
+        // changeDetector.start();
 
 
         Scanner sc = new Scanner(System.in);
