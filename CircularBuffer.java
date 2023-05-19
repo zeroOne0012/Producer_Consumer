@@ -3,7 +3,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class Table {
+public class CircularBuffer {
     public static final String PRODUCER = "Producer";
     public static final String CONSUMER = "Consumer";
     private final int SIZE = 4;
@@ -27,7 +27,7 @@ public class Table {
     private List<ChangeListener> listeners;
 
 
-    public Table() {
+    public CircularBuffer() {
         buffer = new String[SIZE];
         nrfull = new MySemaphore(0);
         nrempty = new MySemaphore(SIZE);
@@ -125,9 +125,7 @@ public class Table {
         _producerIsInside = true;
         String message = "m" + (int) (Math.random() * 100);
 
-        Flags.workingSpace = head;
         buffer[head] = message;
-
 
         notifyListeners(); //생산이 시작됨
         System.out.println("Producing "+message+"...");
@@ -164,7 +162,6 @@ public class Table {
 
         // C
         _consumerIsInside=true;
-        Flags.workingSpace = tail; // tail, head return function !!
 
         String message = buffer[tail];
 

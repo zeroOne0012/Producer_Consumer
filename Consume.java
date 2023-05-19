@@ -1,12 +1,12 @@
 public class Consume implements Runnable {
-    private Table table;
+    private CircularBuffer table;
     private Task task;
-    public Consume(Table table) {
+    public Consume(CircularBuffer table) {
         this.table = table;
         String consumerName = "Consumer" + (int) (Math.random() * 100);
         this.task = new Task(consumerName, 0);
     }
-    public Consume(Table table, Task task) {
+    public Consume(CircularBuffer table, Task task) {
         this.table = table;
         this.task = task;
     }
