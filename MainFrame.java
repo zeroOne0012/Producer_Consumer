@@ -1,4 +1,7 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,26 +12,29 @@ import java.util.Queue;
 interface ChangeListener{
     void somethingChanged();
 }
-                                                    //message 출력, 원 그리기, 색칠, 테두리 없는 테이블?
 public class MainFrame extends JFrame {
 
     private CircularBuffer table;
     private JTextArea waitingList;
-    private JTable taskQueueTable;
     private JPanel queuePanel;
-    private JScrollPane scrollPane;
-    private JScrollPane taskQueueScrollPane;
 
     private Queue<String> taskQueue;
     private int tableSize;
-    private int width = 1200;
+    private int width = 1300;
     private int height = 700;
     private int fontSize = height/35;
-    private int btnWidth = width/8;
+    private int btnWidth = width/10;
     private int btnHeight = height/12;
     private int margin = width/100;
     
+    private QueueModel taskModel;
+
+    public CircularBuffer debugTable(){
+        return table;
+    }
+
     private JButton btnMaker(String name, int x, int y){
+        // 버튼 gui 기본 설정
         JButton btn = new JButton(name);
         btn.setFont(new Font("DialogInput", 1, fontSize));
         btn.setForeground(new Color(255, 255, 255));
@@ -38,9 +44,29 @@ public class MainFrame extends JFrame {
         btn.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
         return btn;
     }
-    public CircularBuffer debugTable(){
-        return table;
+    
+    private JScrollPane scrollPaneMaker(JTable table, JTableHeader header, DefaultTableCellRenderer renderer){
+        // 큐 gui 기본 설정
+        header.setFont(new Font("DialogInput", 0, fontSize)); // 폰트 설정
+        header.setBackground(Color.BLACK); // 타이틀 배경색
+        header.setForeground(Color.WHITE); // 타이틀 글씨색
+        // header.setBorder(null);
+        
+        renderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER); // 셀 가운데 정렬
+        renderer.setFont(new Font("DialogInput", 0, fontSize+100));  // 왜안돼???@@@@@@@@
+        renderer.setBackground(Color.BLACK); // 셀 배경색
+        renderer.setForeground(Color.WHITE); // 셀 글씨색
+        table.setDefaultRenderer(Object.class, renderer);
+        
+        table.setGridColor(Color.BLACK);
+        table.getColumnModel().getColumn(0).setCellRenderer(renderer);
+
+        JScrollPane returnPane = new JScrollPane(table);
+        return returnPane;
     }
+
+    
+    
     public MainFrame() {
         table = new CircularBuffer();
         tableSize = table.getSIZE();
@@ -64,8 +90,6 @@ public class MainFrame extends JFrame {
         titleLabel.setBounds(0, 0, width, height/8);
         titleLabel.setHorizontalAlignment(JLabel.CENTER);
         main.add(titleLabel);
-
-        // 메뉴에 소개랑 로그 작성하기?
         
         // 수행될 작업 목록, 작업 추가 버튼
         JButton produceButton = btnMaker("Producer", margin, height/8);
@@ -73,18 +97,15 @@ public class MainFrame extends JFrame {
         main.add(produceButton);
         main.add(consumeButton);
 
-        // taskqueue: 작업 명단
-        QueueModel model = new QueueModel(taskQueue, "시나리오", false);
-        taskQueueTable = new JTable(model);
-        // taskQueueTable.setFont(new Font("DialogInput", 1, fontSize));
-        // taskQueueTable.setForeground(new Color(255, 255, 255));
-        // taskQueueTable.setBackground(Color.BLACK);
-                // CustomCellRenderer cellRenderer = new CustomCellRenderer();
-                // taskQueueTable.setDefaultRenderer(Object.class, cellRenderer);
-                
-        taskQueueScrollPane = new JScrollPane(taskQueueTable);
+        taskModel= new QueueModel(taskQueue, "시나리오", false);
+        JTable taskQueueTable = new JTable(taskModel);
+        JTableHeader tableHeader = taskQueueTable.getTableHeader();
+        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
+        JScrollPane taskQueueScrollPane = scrollPaneMaker(taskQueueTable, tableHeader, cellRenderer);
         taskQueueScrollPane.setBounds(margin, height/8 + btnHeight + margin, btnWidth*2 + margin, height/2);
         main.add(taskQueueScrollPane);
+        
+
         
         
         // JButton startButton = new JButton("Start");
@@ -119,21 +140,20 @@ public class MainFrame extends JFrame {
 
         
 
-        // produceButton.addActionListener(new ActionListener() {
-        // public void actionPerformed(ActionEvent e) {
-        //     taskQueue.add('P');
-        //     // 버튼을 누를 때마다 업데이트
-        //     taskQueueTable.setModel(new QueueModel(taskQueue, "test"));
-        // }
-        // });
+        produceButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            taskQueue.add("Producer");
+            taskModel.fireTableDataChanged(); //taskQueueScrollPane gui 갱신
+        }
+        });
 
-        // consumeButton.addActionListener(new ActionListener() {
-        // public void actionPerformed(ActionEvent e) {
-        //     taskQueue.add('C');
-        //     // 버튼을 누를 때마다 업데이트
-        //     taskQueueTable.setModel(new QueueModel(taskQueue, "test"));
-        // }
-        // });
+        consumeButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            taskQueue.add("Consumer");
+            // 버튼을 누를 때마다 업데이트
+            taskModel.fireTableDataChanged(); //taskQueueScrollPane gui 갱신    
+        }
+        });
         
         // finish_producing.addActionListener(new ActionListener() {
         //     public void actionPerformed(ActionEvent e){
@@ -198,7 +218,6 @@ public class MainFrame extends JFrame {
             JPanel circlePanel = (JPanel) queuePanel.getComponent(index[table.getTail()]);
             circlePanel.setBackground(Color.ORANGE);
         }
-        taskQueueTable.setModel(new QueueModel(taskQueue, "시나리오", false));
-        // waitQueueTable.setModel(new QueueModel(table.getWaitQueue(), "test2"));
+        taskModel.fireTableDataChanged();
     }
 }
