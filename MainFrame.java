@@ -118,25 +118,23 @@ public class MainFrame extends JFrame {
         }
         waitingList.append("\n");
        
+        final int[] index = {1,3,2,0};
         for (int i = 0; i < tableSize; i++) {
-            JPanel circlePanel = (JPanel) queuePanel.getComponent(i);
+            JPanel circlePanel = (JPanel) queuePanel.getComponent(index[i]);
             if (table.getBuffer()[i] != null) {
-                if(table.personInBuffer!=null && Flags.workingSpace==i){
-                    if(table.personInBuffer.equals(Table.PRODUCER))
-                        circlePanel.setBackground(Color.RED);
-                    else
-                        circlePanel.setBackground(Color.ORANGE);
-                    circlePanel.add(new JLabel(table.getBuffer()[i]));
-                }
-                else{
-                    if(table.personInBuffer!=null)
-                    circlePanel.setBackground(Color.GRAY);
-                    else 
-                    circlePanel.setBackground(Color.GREEN);
-                }
+                circlePanel.setBackground(Color.GREEN);
+                
             } else {
                 circlePanel.setBackground(Color.WHITE);
             }
+        }
+        if(table.producerIsInside()){
+            JPanel circlePanel = (JPanel) queuePanel.getComponent(index[table.getHead()]);
+            circlePanel.setBackground(Color.RED);
+        }
+        if(table.consumerIsInside()){
+            JPanel circlePanel = (JPanel) queuePanel.getComponent(index[table.getTail()]);
+            circlePanel.setBackground(Color.ORANGE);
         }
         taskQueueTable.setModel(new QueueModel(taskQueue, "test"));
         // waitQueueTable.setModel(new QueueModel(table.getWaitQueue(), "test2"));

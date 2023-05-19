@@ -19,7 +19,9 @@ public class Table {
     private boolean stop = false; // 생산 또는 소비 중단 플래그
     private int somethingChanged = 0; // 변화를 ChangeDetector class에서 감지
     
-    public String personInBuffer;
+    private boolean _producerIsInside = false;
+    private boolean _consumerIsInside = false;
+
 
     public Table() {
         buffer = new String[SIZE];
@@ -34,6 +36,18 @@ public class Table {
     }
     public int getSIZE() {
         return this.SIZE;
+    }
+    public int getHead(){
+        return head;
+    }
+    public int getTail(){
+        return tail;
+    }
+    public boolean producerIsInside(){
+        return _producerIsInside;
+    }
+    public boolean consumerIsInside(){
+        return _consumerIsInside;
     }
     public void printQueue() {
         System.out.printf("queue: ");
@@ -76,6 +90,7 @@ public class Table {
             }
         }
     }
+
     public void produce(Task producer) throws InterruptedException {
         // state가 1이면 A부터, 2이면 B부터, 3면 C부터
 
@@ -92,14 +107,14 @@ public class Table {
         }
 
         // C
-        personInBuffer = PRODUCER;
-        String message = "m" + (int) (Math.random() * 20);
+        _producerIsInside = true;
+        String message = "m" + (int) (Math.random() * 100);
 
         Flags.workingSpace = head;
         buffer[head] = message;
 
 
-        somethingChanged++; //작업이 들어옴
+        somethingChanged++; //생산이 시작됨
         System.out.println("Producing "+message+"...");
         while(!stop){
             Thread.sleep(sleepSeconds * 100);
@@ -110,8 +125,8 @@ public class Table {
         head = (head + 1) % buffer.length;
         productCount++;
 
-        personInBuffer = null;
-        somethingChanged++; //작업이 끝남
+        _producerIsInside = false;
+        somethingChanged++; //생산이 끝남
         OperationV(nrfull);
         OperationV(mutexP);
     }
@@ -132,25 +147,24 @@ public class Table {
         } // 소비할 상품 유무 검사
 
         // C
-        personInBuffer = CONSUMER;
-
+        _consumerIsInside=true;
         Flags.workingSpace = tail; // tail, head return function !!
 
         String message = buffer[tail];
 
-        somethingChanged++; //작업이 들어옴 (ui갱신)
+        somethingChanged++; //소비가 시작됨 (ui갱신)
         System.out.println("Consuming "+message+"...");
         while(!stop){
             Thread.sleep(sleepSeconds * 100);
-        }
+        } //
         stop = false;
         System.out.println("Consumed "+message);
         buffer[tail] = null;
         tail = (tail + 1) % buffer.length;
         productCount--;
-        somethingChanged++; //작업이 끝남
+        somethingChanged++; //소비가 끝남
 
-        personInBuffer = null;
+        _consumerIsInside=false;
         
         OperationV(nrempty);
         OperationV(mutexC);
