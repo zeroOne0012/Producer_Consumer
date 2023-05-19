@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.Queue;
 
-interface ChangeListener{
+interface ChangeListener{ // 다중 원형 버퍼의 상태 변화 감지
     void somethingChanged();
 }
 public class MainFrame extends JFrame {
@@ -105,9 +105,15 @@ public class MainFrame extends JFrame {
         taskQueueScrollPane.setBounds(margin, height/8 + btnHeight + margin, btnWidth*2 + margin, height/2);
         main.add(taskQueueScrollPane);
         
+        
+        
 
-        
-        
+
+
+
+
+
+        // setContentPane(new ShowBuffer());
         // JButton startButton = new JButton("Start");
         // JButton finish_producing = new JButton("Finish producing");
         // JButton finish_consuming = new JButton("Finish consuming");
@@ -220,4 +226,16 @@ public class MainFrame extends JFrame {
         }
         taskModel.fireTableDataChanged();
     }
+
+    @Override
+    public void paint(Graphics g) { 
+        // TODO Auto-generated method stub
+        super.paint(g);
+        g.setColor(Color.WHITE);
+        g.fillArc(width/2-height/3,height/2-height/3,height/3,height/3,0,90);
+
+        g.drawRect(width/3, margin, 0, height/8); // 사각형 태두리 그리기
+       }
 }
+
+
