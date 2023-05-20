@@ -12,7 +12,7 @@ public class Consume implements Runnable {
     @Override
     public void run() {
         try {
-            String message = table.consume(task);
+            table.consume(task);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

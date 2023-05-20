@@ -1,7 +1,5 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 public class CircularBuffer {
     public static final String PRODUCER = "Producer";
@@ -11,21 +9,22 @@ public class CircularBuffer {
     private MySemaphore nrfull;
     private MySemaphore nrempty;
     private MySemaphore mutexP;
-    private MySemaphore mutexC;
+    private MySemaphore mutexC; // 세머퍼
 
     private String[] buffer; // 원형 버퍼
     private int head; // 새로 생산할 인덱스
     private int tail; // 소비될 물건의 인덱스
-    private int productCount; // 버퍼 내의 물건 개수
-    private int sleepSeconds = 1;
+    private int sleepSeconds = 1; // stop 감지 주기: 0.1초
+    private String recentInputMessage; // 최근 input message
+    private String recentOutputMessage; // 최근 output message
+
     private boolean _finishProducing = false; // true: 생산 작업 finish
     private boolean _finishConsuming = false; // true: 소비 작업 finish
     
-    private boolean _producerIsInside = false;
-    private boolean _consumerIsInside = false;
+    private boolean _producerIsInside = false; // 생산자가 생산중인지
+    private boolean _consumerIsInside = false; // 소비자가 소비중인지
 
-    private List<ChangeListener> listeners;
-
+    private List<ChangeListener> listeners; // buffer 변화를 MainFrame에서 감지
 
     public CircularBuffer() {
         buffer = new String[SIZE];
@@ -52,20 +51,25 @@ public class CircularBuffer {
     public boolean consumerIsInside(){
         return _consumerIsInside;
     }
-    public void printQueue() {
-        System.out.printf("queue: ");
-        for (String i : buffer) {
-        System.out.printf(i + " ");
-        }
-        System.out.println();
-    }
+
+    public String getBufferValue(int index){
+        if(index < 0 || index >= SIZE) return null;
+        else return buffer[index];
+    } // 버퍼 값을 읽음
+    // public void printQueue() {
+    //     System.out.printf("queue: ");
+    //     for (String i : buffer) {
+    //     System.out.printf(i + " ");
+    //     }
+    //     System.out.println();
+    // }
     public String[] getBuffer(){
         return buffer;
     }
     public MySemaphore getNrfull(){
         return nrfull;
     }
-    public MySemaphore getNremptry(){
+    public MySemaphore getNrempty(){
         return nrempty;
     }
     public MySemaphore getMutexP(){
@@ -73,6 +77,13 @@ public class CircularBuffer {
     }
     public MySemaphore getMutexC(){
         return mutexC;
+    }
+
+    public String getInput(){
+        return recentInputMessage;
+    }
+    public String getOutput(){
+        return recentOutputMessage;
     }
 
     public void finishProducing(){
@@ -124,8 +135,8 @@ public class CircularBuffer {
         // C
         _producerIsInside = true;
         String message = "m" + (int) (Math.random() * 100);
-
         buffer[head] = message;
+        recentInputMessage = message;
 
         notifyListeners(); //생산이 시작됨 (gui 갱신)
         System.out.println("Producing "+message+"...");
@@ -137,29 +148,28 @@ public class CircularBuffer {
         System.out.println("Produced " + message);
 
         head = (head + 1) % buffer.length;
-        productCount++;
-
         _producerIsInside = false;
         notifyListeners(); //생산이 끝남 (gui 갱신)
+
         OperationV(nrfull);
         notifyListeners(); // 세머퍼 gui 갱신
         OperationV(mutexP);
         notifyListeners(); // 세머퍼 gui 갱신
     }
 
-    public String consume(Task consumer) throws InterruptedException {
+    public void consume(Task consumer) throws InterruptedException {
         // state가 1이면 A부터, 2이면 B부터, 3면 C부터
 
         // A
         if(consumer.getState()==Task.FIRST_TIME && !mutexC.P(consumer)){
             notifyListeners();
-            return null;
+            return;
         } // consumer 상호 배제 검사
 
         // B
         if((consumer.getState()==Task.FIRST_TIME || consumer.getState()==Task.MUTEX_CHECKED) && !nrfull.P(consumer)){
             notifyListeners();
-            return null;
+            return;
         } // 소비할 상품 유무 검사
 
         // C
@@ -175,16 +185,17 @@ public class CircularBuffer {
         } 
         _finishConsuming = false;
         System.out.println("Consumed "+message);
+
         buffer[tail] = null;
         tail = (tail + 1) % buffer.length;
-        productCount--;
-
         _consumerIsInside=false;
         notifyListeners(); // 소비가 끝남 (gui 갱신)
+
         OperationV(nrempty);
         notifyListeners(); // 세머퍼 gui 갱신
+        
         OperationV(mutexC);
-        notifyListeners(); // 세머퍼 gui 갱신
-        return message;
+        recentOutputMessage = message;
+        notifyListeners(); // 세머퍼, output gui 갱신
     }
 }
