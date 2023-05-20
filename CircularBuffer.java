@@ -62,17 +62,17 @@ public class CircularBuffer {
     public String[] getBuffer(){
         return buffer;
     }
-    public Queue<String> getNrfull(){
-        return nrfull.getWaitingQueue();
+    public MySemaphore getNrfull(){
+        return nrfull;
     }
-    public Queue<String> getNremptry(){
-        return nrempty.getWaitingQueue();
+    public MySemaphore getNremptry(){
+        return nrempty;
     }
-    public Queue<String> getMutexP(){
-        return mutexP.getWaitingQueue();
+    public MySemaphore getMutexP(){
+        return mutexP;
     }
-    public Queue<String> getMutexC(){
-        return mutexC.getWaitingQueue();
+    public MySemaphore getMutexC(){
+        return mutexC;
     }
 
     public void finishProducing(){
@@ -127,7 +127,7 @@ public class CircularBuffer {
 
         buffer[head] = message;
 
-        notifyListeners(); //생산이 시작됨
+        notifyListeners(); //생산이 시작됨 (gui 갱신)
         System.out.println("Producing "+message+"...");
         _finishProducing = false;
         while(!_finishProducing){
@@ -140,9 +140,11 @@ public class CircularBuffer {
         productCount++;
 
         _producerIsInside = false;
-        notifyListeners(); //생산이 끝남
+        notifyListeners(); //생산이 끝남 (gui 갱신)
         OperationV(nrfull);
+        notifyListeners(); // 세머퍼 gui 갱신
         OperationV(mutexP);
+        notifyListeners(); // 세머퍼 gui 갱신
     }
 
     public String consume(Task consumer) throws InterruptedException {
@@ -165,7 +167,7 @@ public class CircularBuffer {
 
         String message = buffer[tail];
 
-        notifyListeners(); //소비가 시작됨 (ui갱신)
+        notifyListeners(); // 소비가 시작됨 (gui갱신)
         System.out.println("Consuming "+message+"...");
         _finishConsuming = false;
         while(!_finishConsuming){
@@ -178,10 +180,11 @@ public class CircularBuffer {
         productCount--;
 
         _consumerIsInside=false;
-        notifyListeners(); //소비가 끝남
+        notifyListeners(); // 소비가 끝남 (gui 갱신)
         OperationV(nrempty);
+        notifyListeners(); // 세머퍼 gui 갱신
         OperationV(mutexC);
-
+        notifyListeners(); // 세머퍼 gui 갱신
         return message;
     }
 }

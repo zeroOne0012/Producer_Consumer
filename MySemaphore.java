@@ -1,13 +1,17 @@
 import java.util.Queue;
 import java.util.LinkedList;
 public class MySemaphore {
+    private int semaphore;
     private Queue<Task> waitingQueue;
-    private int permit;
-    public MySemaphore(int permit){
+
+    public MySemaphore(int semaphore){
+        this.semaphore = semaphore;
         waitingQueue = new LinkedList<Task>();
-        this.permit = permit;
     }
 
+    public String getState(){
+        return semaphore + "";
+    }
     public Queue<String> getWaitingQueue(){
         Queue<String> waitingNameQueue = new LinkedList<>();
         for (Task person : waitingQueue) {
@@ -17,21 +21,22 @@ public class MySemaphore {
     }
 
     public boolean P(Task task){
-        //Critical Section 진입 가능 여부 반환
+        // Critical Section 진입 가능 여부 반환
         task.setState(task.getState()+1);
-        if(permit>0){
-            permit--;
+        if(semaphore>0){
+            semaphore--;
             return true;
-        } else{
+        } else{ // 중단
             waitingQueue.add(task);
             return false;
         }
     }
     public Task V(){
+        // P 연산으로 중단되었던 task wakeup
         if(!waitingQueue.isEmpty()){
             return waitingQueue.poll();
         } else{
-            permit++;
+            semaphore++;
             return null;
         }
     }

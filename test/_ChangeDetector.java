@@ -1,4 +1,4 @@
-package test;
+// package test;
 // public class ChangeDetector implements Runnable{
 //     private int changeTemp; //변화하기 전 flag 값
 //     private MainFrame main;

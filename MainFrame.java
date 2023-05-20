@@ -14,29 +14,34 @@ interface ChangeListener{ // 다중 원형 버퍼의 상태 변화 감지
 }
 public class MainFrame extends JFrame {
 
-    private CircularBuffer table;
-    private JTextArea waitingList;
-    private JPanel queuePanel;
+    private CircularBuffer mainBuffer;
 
-    private Queue<String> taskQueue;
-    private int tableSize;
-    private int width = 1300;
-    private int height = 700;
-    private int fontSize = height/35;
-    private int btnWidth = width/10;
-    private int btnHeight = height/12;
-    private int margin = width/100;
+    private Queue<String> taskQueue;    // 시나리오 (tasks 큐)
+    private int bufferSize;             // 원형 버퍼 사이즈 (=4)
+    private int width = 1400;           // 실행 창 width
+    private int height = 800;           // 실행 창 height
+    private int fontSize = height/35;   // 폰트 크기
+    private int btnWidth = width/10;    // 버튼 width
+    private int btnHeight = height/12;  // 버튼 height
+    private int margin = width/100;     // 균일화된 요소간 간격
+    private int titleHeight = height/8; // titleLabel height
     
-    private QueueModel taskModel;
+    private QueueModel taskModel;   // taskQueue 갱신시 사용
+    private JLabel mutexPState;     // mutexP  갱신시 사용
+    private JLabel mutexCState;     // mutexC  갱신시 사용
+    private JLabel nrfullState;     // nrfull  갱신시 사용
+    private JLabel nremptyState;    // nrempty 갱신시 사용
+    private QueueModel mutexPModel;
+    
 
     public CircularBuffer debugTable(){
-        return table;
+        return mainBuffer;
     }
 
-    private JButton btnMaker(String name, int x, int y){
+    private JButton btnSetter(String name, int x, int y){
         // 버튼 gui 기본 설정
         JButton btn = new JButton(name);
-        btn.setFont(new Font("DialogInput", 1, fontSize));
+        btn.setFont(new Font("Gadugi", 1, fontSize));
         btn.setForeground(new Color(255, 255, 255));
         btn.setBounds(x, y, btnWidth, btnHeight);
         btn.setHorizontalAlignment(JLabel.CENTER);
@@ -45,15 +50,15 @@ public class MainFrame extends JFrame {
         return btn;
     }
     
-    private JScrollPane scrollPaneMaker(JTable table, JTableHeader header, DefaultTableCellRenderer renderer){
+    private JScrollPane scrollPaneSetter(JTable table, JTableHeader header, DefaultTableCellRenderer renderer){
         // 큐 gui 기본 설정
-        header.setFont(new Font("DialogInput", 0, fontSize)); // 폰트 설정
+        header.setFont(new Font("Gadugi", 0, fontSize)); // 폰트 설정
         header.setBackground(Color.BLACK); // 타이틀 배경색
         header.setForeground(Color.WHITE); // 타이틀 글씨색
         // header.setBorder(null);
         
         renderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER); // 셀 가운데 정렬
-        renderer.setFont(new Font("DialogInput", 0, fontSize+100));  // 왜안돼???@@@@@@@@
+        renderer.setFont(new Font("Gadugi", 0, fontSize+100));  // 왜안돼???@@@@@@@@
         renderer.setBackground(Color.BLACK); // 셀 배경색
         renderer.setForeground(Color.WHITE); // 셀 글씨색
         table.setDefaultRenderer(Object.class, renderer);
@@ -65,14 +70,21 @@ public class MainFrame extends JFrame {
         return returnPane;
     }
 
+    private JLabel labelSetter(JLabel label, String text, int font){
+        label.setFont(new Font("Gadugi", 1, font));
+        label.setForeground(new Color(255, 255, 255));
+        label.setText(text);
+        label.setHorizontalAlignment(JLabel.CENTER);
+        return label;
+    }
     
     
     public MainFrame() {
-        table = new CircularBuffer();
-        tableSize = table.getSIZE();
+        mainBuffer = new CircularBuffer();
+        bufferSize = mainBuffer.getSIZE();
         taskQueue = new LinkedList();
 
-        setTitle("Producer-Consumer");
+        setTitle("Producer-Consumer simulation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(width, height);
         setLocationRelativeTo(null);
@@ -84,157 +96,206 @@ public class MainFrame extends JFrame {
 
         // 제목
         JLabel titleLabel = new JLabel();
-        titleLabel.setFont(new Font("DialogInput", 1, fontSize + 5));
-        titleLabel.setForeground(new Color(255, 255, 255));
-        titleLabel.setText("생산자 소비자 시뮬레이터");
-        titleLabel.setBounds(0, 0, width, height/8);
-        titleLabel.setHorizontalAlignment(JLabel.CENTER);
+        titleLabel = labelSetter(titleLabel, "Producer-Consumer simulation", fontSize+10);
+        titleLabel.setBounds(0, 0, width, titleHeight);
         main.add(titleLabel);
         
+
+
         // 수행될 작업 목록, 작업 추가 버튼
-        JButton produceButton = btnMaker("Producer", margin, height/8);
-        JButton consumeButton = btnMaker("Consumer", margin*2 + btnWidth, height/8);
+        int westElementsLocationX = margin;
+        JButton produceButton = btnSetter("Producer", westElementsLocationX, titleHeight + margin);
+        JButton consumeButton = btnSetter("Consumer", westElementsLocationX + margin + btnWidth, titleHeight + margin);
         main.add(produceButton);
         main.add(consumeButton);
 
-        taskModel= new QueueModel(taskQueue, "시나리오", false);
+        taskModel= new QueueModel(taskQueue, "Tasks scenario", false);
         JTable taskQueueTable = new JTable(taskModel);
         JTableHeader tableHeader = taskQueueTable.getTableHeader();
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
-        JScrollPane taskQueueScrollPane = scrollPaneMaker(taskQueueTable, tableHeader, cellRenderer);
-        taskQueueScrollPane.setBounds(margin, height/8 + btnHeight + margin, btnWidth*2 + margin, height/2);
+        JScrollPane taskQueueScrollPane = scrollPaneSetter(taskQueueTable, tableHeader, cellRenderer);
+        taskQueueScrollPane.setBounds(westElementsLocationX, titleHeight + btnHeight + margin*2, btnWidth*2 + margin, height/3);
         main.add(taskQueueScrollPane);
         
         
-        
-
-
-
-
-
-
-        // setContentPane(new ShowBuffer());
-        // JButton startButton = new JButton("Start");
-        // JButton finish_producing = new JButton("Finish producing");
-        // JButton finish_consuming = new JButton("Finish consuming");
-
-        // buttonPanel.add(startButton);
-        // buttonPanel.add(finish_producing);
-        // buttonPanel.add(finish_consuming);
-        // main.add(buttonPanel, BorderLayout.NORTH);
-
-        table.addChangeListener(new ChangeListener(){
+        mainBuffer.addChangeListener(new ChangeListener(){
             public void somethingChanged(){
                 renew();
             }
-        });
+        }); // 버퍼 상태 변화시 gui 갱신
 
-        // waitingList = new JTextArea();
-        // scrollPane = new JScrollPane(waitingList);
-        // add(scrollPane, BorderLayout.CENTER);
 
-        // // queuepanel: 원형 버퍼
-        // queuePanel = new JPanel();
-        // queuePanel.setLayout(new GridLayout(2, 2));
-        // for (int i = 0; i < tableSize; i++) {
-        //     JPanel circlePanel = new JPanel();
-        //     circlePanel.setPreferredSize(new Dimension(50, 50));
-        //     circlePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        //     queuePanel.add(circlePanel);
-        // }
-        // add(queuePanel, BorderLayout.SOUTH);
+
+        int eastElementsLocationX = width/4*3; // 우측 요소들 x축 위치
+
+        JButton startButton = btnSetter("Start a task", 0,0);
+        startButton.setBounds(eastElementsLocationX, titleHeight + margin, btnWidth*2 + margin*3, btnHeight);
+        main.add(startButton);
+
+        JButton finish_producing = btnSetter("Produced",0,0);
+        finish_producing.setBounds(eastElementsLocationX, titleHeight+btnHeight+margin*2, btnWidth + margin, btnHeight);
+        main.add(finish_producing);
+        JButton finish_consuming = btnSetter("Consumed", 0,0);
+        finish_consuming.setBounds(eastElementsLocationX+btnWidth + margin*2, titleHeight+btnHeight+margin*2, btnWidth + margin, btnHeight);
+        main.add(finish_consuming);
 
         
 
+        JLabel in = new JLabel();
+        in = labelSetter(in, "in", fontSize);
+        in.setBounds(eastElementsLocationX, titleHeight + btnHeight*3, btnWidth, btnHeight);
+        main.add(in);
+
+        JLabel inValue = new JLabel();
+        inValue = labelSetter(inValue, "d", fontSize);
+        inValue.setBounds(eastElementsLocationX, titleHeight + btnHeight*4, btnWidth, btnHeight/2*3);
+        inValue.setBorder(BorderFactory.createLineBorder(Color.WHITE,2));
+        main.add(inValue);
+
+        JLabel out = new JLabel();
+        out = labelSetter(out, "out", fontSize);
+        out.setBounds(eastElementsLocationX + btnWidth + margin*3, titleHeight + btnHeight*3, btnWidth, btnHeight);
+        main.add(out);
+
+        JLabel outValue = new JLabel();
+        outValue = labelSetter(outValue, "", fontSize);
+        outValue.setBounds(eastElementsLocationX + btnWidth + margin*3, titleHeight + btnHeight*4, btnWidth, btnHeight/2*3);
+        outValue.setBorder(BorderFactory.createLineBorder(Color.WHITE,2));
+        main.add(outValue);
+
+
+        int southElementsLocationY = height/5*3;
+
+        JLabel mutexPLabel = new JLabel();
+        mutexPLabel = labelSetter(mutexPLabel, "mutexP", fontSize);
+        mutexPLabel.setBounds(width/2-btnWidth-margin, southElementsLocationY, btnWidth, btnHeight/2);
+        main.add(mutexPLabel);
+
+        mutexPState = new JLabel();
+        mutexPState = labelSetter(mutexPState, mainBuffer.getMutexP().getState(), fontSize);
+        mutexPState.setBounds(width/2-btnWidth, southElementsLocationY + btnHeight/2, btnWidth - margin*2, btnHeight);
+        mutexPState.setBorder(BorderFactory.createLineBorder(Color.WHITE,2));
+        main.add(mutexPState);
+
+        
+        // mutexPModel = new QueueModel(mainBuffer.getMutexP().getWaitingQueue(), "", true);
+        // JTable pTable = new JTable(mutexPModel);
+        // JTableHeader pHeader = pTable.getTableHeader();
+        // DefaultTableCellRenderer pRenderer = new DefaultTableCellRenderer();
+        // JScrollPane pScrollPane = scrollPaneSetter(pTable, pHeader, pRenderer);
+        // pScrollPane.setBounds(width/4, southElementsLocationY + btnHeight/2, width/4, btnHeight);
+        // main.add(pScrollPane);
+
+        JLabel mutexCLabel = new JLabel();
+        mutexCLabel = labelSetter(mutexCLabel, "mutexC", fontSize);
+        mutexCLabel.setBounds(width/2, southElementsLocationY, btnWidth, btnHeight/2);
+        main.add(mutexCLabel);
+
+        mutexCState = new JLabel();
+        mutexCState = labelSetter(mutexCState, mainBuffer.getMutexC().getState(), fontSize);
+        mutexCState.setBounds(width/2 + margin, southElementsLocationY + btnHeight/2, btnWidth - margin*2, btnHeight);
+        mutexCState.setBorder(BorderFactory.createLineBorder(Color.WHITE,2));
+        main.add(mutexCState);
+
+
+
+
+        ////////////////////////////////////////////////////////////////// working
+
+
+
         produceButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            taskQueue.add("Producer");
+            taskQueue.add(CircularBuffer.PRODUCER);
             taskModel.fireTableDataChanged(); //taskQueueScrollPane gui 갱신
         }
         });
 
         consumeButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            taskQueue.add("Consumer");
+            taskQueue.add(CircularBuffer.CONSUMER);
             // 버튼을 누를 때마다 업데이트
             taskModel.fireTableDataChanged(); //taskQueueScrollPane gui 갱신    
         }
         });
         
-        // finish_producing.addActionListener(new ActionListener() {
-        //     public void actionPerformed(ActionEvent e){
-        //         if(table.producerIsInside())
-        //             table.finishProducing();
-        //     }
-        // });
-        // finish_consuming.addActionListener(new ActionListener() {
-        //     public void actionPerformed(ActionEvent e){
-        //         if(table.consumerIsInside())
-        //         table.finishConsuming();
-        //     }
-        // });
-        // startButton.addActionListener(new ActionListener() {
-        // public void actionPerformed(ActionEvent e) {
-        //     if (!taskQueue.isEmpty()) {
-        //         char task = taskQueue.poll();
-        //         if (task == 'P') {
-        //             Thread produce = new Thread(new Produce(table));
-        //             produce.start();
-        //         } else if (task == 'C') {
-        //             Thread consume = new Thread(new Consume(table));
-        //             consume.start();
-        //         }
-        //     } else {
-        //         waitingList.append("No tasks in queue\n");
-        //     }       
-        // }
-        // });
+        finish_producing.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                if(mainBuffer.producerIsInside())
+                    mainBuffer.finishProducing();
+            }
+        });
+        finish_consuming.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e){
+                if(mainBuffer.consumerIsInside())
+                mainBuffer.finishConsuming();
+            }
+        });
+        startButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            if (!taskQueue.isEmpty()) {
+                String task = taskQueue.poll();
+                if (task.equals(CircularBuffer.PRODUCER)) {
+                    Thread produce = new Thread(new Produce(mainBuffer));
+                    produce.start();
+                } else if (task.equals(CircularBuffer.CONSUMER)) {
+                    Thread consume = new Thread(new Consume(mainBuffer));
+                    consume.start();
+                }
+            }   
+        }
+        });
 
 
 
 
 
 
-
+        renew();
 
 
     }
-    public void renew(){ //갱신
-        for (int i = 0; i < 4; i++) {
-            waitingList.append(table.getBuffer()[i] + " ");
-
-        }
-        waitingList.append("\n");
-       
-        final int[] index = {1,3,2,0};
-        for (int i = 0; i < tableSize; i++) {
-            JPanel circlePanel = (JPanel) queuePanel.getComponent(index[i]);
-            if (table.getBuffer()[i] != null) {
-                circlePanel.setBackground(Color.GREEN);
-                
-            } else {
-                circlePanel.setBackground(Color.WHITE);
-            }
-        }
-        if(table.producerIsInside()){
-            JPanel circlePanel = (JPanel) queuePanel.getComponent(index[table.getHead()]);
-            circlePanel.setBackground(Color.RED);
-        }
-        if(table.consumerIsInside()){
-            JPanel circlePanel = (JPanel) queuePanel.getComponent(index[table.getTail()]);
-            circlePanel.setBackground(Color.ORANGE);
-        }
-        taskModel.fireTableDataChanged();
+    public void renew(){ // 갱신
+        mutexPState.setText(mainBuffer.getMutexP().getState()); // mutexP 갱신
+        mutexCState.setText(mainBuffer.getMutexC().getState()); // mutexC 갱신
+        taskModel.fireTableDataChanged(); // 시나리오 갱신 
+        repaint(); // mainBuffer 갱신
     }
 
     @Override
     public void paint(Graphics g) { 
-        // TODO Auto-generated method stub
+        int radius = height/6;
+        int diameter = radius*2;
+        int X = width/2;
+        int Y = height/2 - btnHeight;
         super.paint(g);
         g.setColor(Color.WHITE);
-        g.fillArc(width/2-height/3,height/2-height/3,height/3,height/3,0,90);
+        g.fillArc(X-radius,Y-radius,diameter,diameter,0,360);
+        // 원형 버퍼 default color: 흰색
 
-        g.drawRect(width/3, margin, 0, height/8); // 사각형 태두리 그리기
+        
+
+        for (int i = 0; i < bufferSize; i++) { // 값이 있는 공간 채색
+            if (mainBuffer.getBuffer()[i] != null) {
+                g.setColor(Color.BLACK);
+                g.fillArc(X-radius,Y-radius,diameter,diameter,i*(-90),90);
+            }
+        }
+        if(mainBuffer.producerIsInside()){ // 생산중인 공간 채색
+            g.setColor(Color.DARK_GRAY);
+            g.fillArc(X-radius,Y-radius,diameter,diameter,mainBuffer.getHead()*(-90),90);
+        }
+        if(mainBuffer.consumerIsInside()){ // 소비중인 공간 채색
+            g.setColor(Color.GRAY);
+            g.fillArc(X-radius,Y-radius,diameter,diameter,mainBuffer.getTail()*(-90),90);
+        }
+        
+        g.setColor(Color.LIGHT_GRAY);
+        g.drawLine(X, Y-radius, X, Y+radius); // 버퍼의 세로 선
+        g.drawLine(X-radius, Y, X+radius, Y);   // 버퍼의 가로 선
+        g.drawArc(X-radius, Y-radius, diameter, diameter, 0, 360);
+
+        g.setColor(Color.WHITE);
        }
 }
 
