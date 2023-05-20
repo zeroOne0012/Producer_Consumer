@@ -2,9 +2,8 @@
 public class Produce implements Runnable {
     private CircularBuffer table;
     private Task task;
-    public Produce(CircularBuffer table) {
+    public Produce(CircularBuffer table, String producerName) {
         this.table = table;
-        String producerName = "Producer" + (int) (Math.random() * 100);
         this.task = new Task(producerName, 0);
     }
     public Produce(CircularBuffer table, Task task) {

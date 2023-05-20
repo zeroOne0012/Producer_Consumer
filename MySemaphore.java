@@ -13,6 +13,7 @@ public class MySemaphore {
         return semaphore + "";
     }
     public Queue<String> getWaitingQueue(){
+        // 대기 큐의 이름들만 큐로 반환
         Queue<String> waitingNameQueue = new LinkedList<>();
         for (Task person : waitingQueue) {
             waitingNameQueue.add(person.getName());

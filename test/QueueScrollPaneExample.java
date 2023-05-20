@@ -15,7 +15,7 @@ public class QueueScrollPaneExample extends JFrame {
 
         // 큐의 값을 표시할 JLabel 생성
         JPanel labelPanel = new JPanel();
-        labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
+        labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.LINE_AXIS));
         for (String item : queue) {
             JLabel label = new JLabel(item);
             label.setFont(new Font("Arial", Font.PLAIN, 14));

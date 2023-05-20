@@ -26,12 +26,13 @@ public class MainFrame extends JFrame {
     private int margin = width/100;     // 균일화된 요소간 간격
     private int titleHeight = height/8; // titleLabel height
     
-    private QueueModel taskModel;   // taskQueue 갱신시 사용
     private JLabel mutexPState;     // mutexP  갱신시 사용
     private JLabel mutexCState;     // mutexC  갱신시 사용
     private JLabel nrfullState;     // nrfull  갱신시 사용
     private JLabel nremptyState;    // nrempty 갱신시 사용
-    private QueueModel mutexPModel;
+
+    private int producerNum = 1;
+    private int consumerNum = 1;    // 몇 번째 생산/소비자인지
     
 
     public CircularBuffer debugTable(){
@@ -50,25 +51,7 @@ public class MainFrame extends JFrame {
         return btn;
     }
     
-    private JScrollPane scrollPaneSetter(JTable table, JTableHeader header, DefaultTableCellRenderer renderer){
-        // 큐 gui 기본 설정
-        header.setFont(new Font("Gadugi", 0, fontSize)); // 폰트 설정
-        header.setBackground(Color.BLACK); // 타이틀 배경색
-        header.setForeground(Color.WHITE); // 타이틀 글씨색
-        // header.setBorder(null);
-        
-        renderer.setHorizontalAlignment(DefaultTableCellRenderer.CENTER); // 셀 가운데 정렬
-        renderer.setFont(new Font("Gadugi", 0, fontSize+100));  // 왜안돼???@@@@@@@@
-        renderer.setBackground(Color.BLACK); // 셀 배경색
-        renderer.setForeground(Color.WHITE); // 셀 글씨색
-        table.setDefaultRenderer(Object.class, renderer);
-        
-        table.setGridColor(Color.BLACK);
-        table.getColumnModel().getColumn(0).setCellRenderer(renderer);
-
-        JScrollPane returnPane = new JScrollPane(table);
-        return returnPane;
-    }
+    
 
     private JLabel labelSetter(JLabel label, String text, int font){
         label.setFont(new Font("Gadugi", 1, font));
@@ -102,21 +85,25 @@ public class MainFrame extends JFrame {
         
 
 
-        // 수행될 작업 목록, 작업 추가 버튼
+        // 작업 추가 버튼
         int westElementsLocationX = margin;
         JButton produceButton = btnSetter("Producer", westElementsLocationX, titleHeight + margin);
         JButton consumeButton = btnSetter("Consumer", westElementsLocationX + margin + btnWidth, titleHeight + margin);
         main.add(produceButton);
         main.add(consumeButton);
 
-        taskModel= new QueueModel(taskQueue, "Tasks scenario", false);
-        JTable taskQueueTable = new JTable(taskModel);
-        JTableHeader tableHeader = taskQueueTable.getTableHeader();
-        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
-        JScrollPane taskQueueScrollPane = scrollPaneSetter(taskQueueTable, tableHeader, cellRenderer);
-        taskQueueScrollPane.setBounds(westElementsLocationX, titleHeight + btnHeight + margin*2, btnWidth*2 + margin, height/3);
-        main.add(taskQueueScrollPane);
-        
+        // 수행될 작업 목록
+        JTextArea taskText = new JTextArea();
+        taskText.setEditable(true);
+        JScrollPane taskPane = new JScrollPane(taskText);
+        taskPane.setBounds(westElementsLocationX, titleHeight + btnHeight + margin*2, btnWidth*2+margin, height/3);
+        main.add(taskPane);
+
+        taskText.setBackground(Color.BLACK);
+        taskText.setFont(new Font("Gadugi", 1, fontSize-6));
+        taskText.setForeground(new Color(255, 255, 255));
+        taskText.setText(getString(taskQueue));
+
         
         mainBuffer.addChangeListener(new ChangeListener(){
             public void somethingChanged(){
@@ -178,13 +165,7 @@ public class MainFrame extends JFrame {
         main.add(mutexPState);
 
         
-        // mutexPModel = new QueueModel(mainBuffer.getMutexP().getWaitingQueue(), "", true);
-        // JTable pTable = new JTable(mutexPModel);
-        // JTableHeader pHeader = pTable.getTableHeader();
-        // DefaultTableCellRenderer pRenderer = new DefaultTableCellRenderer();
-        // JScrollPane pScrollPane = scrollPaneSetter(pTable, pHeader, pRenderer);
-        // pScrollPane.setBounds(width/4, southElementsLocationY + btnHeight/2, width/4, btnHeight);
-        // main.add(pScrollPane);
+        //sibal bb
 
         JLabel mutexCLabel = new JLabel();
         mutexCLabel = labelSetter(mutexCLabel, "mutexC", fontSize);
@@ -206,16 +187,15 @@ public class MainFrame extends JFrame {
 
         produceButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            taskQueue.add(CircularBuffer.PRODUCER);
-            taskModel.fireTableDataChanged(); //taskQueueScrollPane gui 갱신
+            taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+            taskText.setText(getString(taskQueue)); //task gui 갱신
         }
         });
 
         consumeButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            taskQueue.add(CircularBuffer.CONSUMER);
-            // 버튼을 누를 때마다 업데이트
-            taskModel.fireTableDataChanged(); //taskQueueScrollPane gui 갱신    
+            taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+            taskText.setText(getString(taskQueue)); //task gui 갱신
         }
         });
         
@@ -234,31 +214,23 @@ public class MainFrame extends JFrame {
         startButton.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             if (!taskQueue.isEmpty()) {
-                String task = taskQueue.poll();
-                if (task.equals(CircularBuffer.PRODUCER)) {
-                    Thread produce = new Thread(new Produce(mainBuffer));
+                String taskPerformer = taskQueue.poll();
+                taskText.setText(getString(taskQueue)); //task gui 갱신
+                if (taskPerformer.contains(CircularBuffer.PRODUCER)) {
+                    Thread produce = new Thread(new Produce(mainBuffer, taskPerformer));
                     produce.start();
-                } else if (task.equals(CircularBuffer.CONSUMER)) {
-                    Thread consume = new Thread(new Consume(mainBuffer));
+                } else if (taskPerformer.contains(CircularBuffer.CONSUMER)) {
+                    Thread consume = new Thread(new Consume(mainBuffer, taskPerformer));
                     consume.start();
                 }
             }   
         }
         });
-
-
-
-
-
-
         renew();
-
-
     }
     public void renew(){ // 갱신
         mutexPState.setText(mainBuffer.getMutexP().getState()); // mutexP 갱신
         mutexCState.setText(mainBuffer.getMutexC().getState()); // mutexC 갱신
-        taskModel.fireTableDataChanged(); // 시나리오 갱신 
         repaint(); // mainBuffer 갱신
     }
 
@@ -296,7 +268,15 @@ public class MainFrame extends JFrame {
         g.drawArc(X-radius, Y-radius, diameter, diameter, 0, 360);
 
         g.setColor(Color.WHITE);
-       }
+    }
+    
+    public String getString(Queue<String> queue){
+        String resultString = "";
+        for(String name : queue){
+            resultString += name + "\n";
+        }
+        return resultString;
+    }
 }
 
 
