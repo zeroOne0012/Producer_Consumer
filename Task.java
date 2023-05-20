@@ -1,4 +1,5 @@
 public class Task {
+    // 생산/소비자 이름과 어느 세머퍼에 의해 중단되었는지에 대한 값을 가지는 Task class
     public static final int FIRST_TIME = 0;
     public static final int MUTEX_CHECKED = 1;
     public static final int BUFFER_CHECKED = 2;

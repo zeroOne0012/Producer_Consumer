@@ -1,6 +1,7 @@
 import java.util.Queue;
 import java.util.LinkedList;
 public class MySemaphore {
+    // P, V 연산과 대기 큐를 가지는 세머퍼 class
     private int semaphore;
     private Queue<Task> waitingQueue;
 
