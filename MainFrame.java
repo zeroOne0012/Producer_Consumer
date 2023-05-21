@@ -43,38 +43,40 @@ public class MainFrame extends JFrame {
     private final int diameter = radius*2;
     private final int X = width/2;
     private final int Y = height/2 - btnHeight; // 원의 좌표
-    
 
-    public CircularBuffer debugTable(){
-        return mainBuffer;
-    }
+    private void initialTaskScenario(){ // 시나리오
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
 
-    private JButton btnSetter(String name, int x, int y){
-        // 버튼 gui 기본 설정
-        JButton btn = new JButton(name);
-        btn.setFont(new Font("Gadugi", 1, fontSize));
-        btn.setForeground(new Color(255, 255, 255));
-        btn.setBounds(x, y, btnWidth, btnHeight);
-        btn.setHorizontalAlignment(JLabel.CENTER);
-        btn.setBackground(Color.BLACK);
-        btn.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
-        return btn;
-    }
-    
-    
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
 
-    private JLabel labelSetter(JLabel label, String text, int font){
-        label.setFont(new Font("Gadugi", 1, font));
-        label.setForeground(new Color(255, 255, 255));
-        label.setText(text);
-        label.setHorizontalAlignment(JLabel.CENTER);
-        return label;
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
     }
-    
-    
     public MainFrame() {
         mainBuffer = new CircularBuffer();
-        taskQueue = new LinkedList();
+        taskQueue = new LinkedList<>();
+
+        initialTaskScenario(); // 주어진 시나리오 입력
 
         setTitle("Producer-Consumer simulation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -320,6 +322,26 @@ public class MainFrame extends JFrame {
         }
         });
         renew();
+    }
+
+    private JButton btnSetter(String name, int x, int y){
+        // 버튼 gui 기본 설정
+        JButton btn = new JButton(name);
+        btn.setFont(new Font("Gadugi", 1, fontSize));
+        btn.setForeground(new Color(255, 255, 255));
+        btn.setBounds(x, y, btnWidth, btnHeight);
+        btn.setHorizontalAlignment(JLabel.CENTER);
+        btn.setBackground(Color.BLACK);
+        btn.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+        return btn;
+    }
+    
+    private JLabel labelSetter(JLabel label, String text, int font){
+        label.setFont(new Font("Gadugi", 1, font));
+        label.setForeground(new Color(255, 255, 255));
+        label.setText(text);
+        label.setHorizontalAlignment(JLabel.CENTER);
+        return label;
     }
 
     public void renew(){ // 갱신
