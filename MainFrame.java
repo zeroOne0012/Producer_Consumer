@@ -95,8 +95,6 @@ public class MainFrame extends JFrame {
         titleLabel.setBounds(0, 0, width, titleHeight);
         main.add(titleLabel);
         
-
-
         // 작업 추가 버튼
         int westElementsLocationX = margin;
         JButton produceButton = btnSetter("Producer", westElementsLocationX, titleHeight + margin);
@@ -104,10 +102,17 @@ public class MainFrame extends JFrame {
         main.add(produceButton);
         main.add(consumeButton);
 
-        // 수행될 작업 목록
+        // "Tasks Scenario"
+        JLabel taskScenario = new JLabel();
+        taskScenario = labelSetter(taskScenario, "Tasks Scenario", fontSize);
+        taskScenario.setBounds(westElementsLocationX, titleHeight + btnHeight + margin*2, btnWidth*2 + margin, btnHeight/2);
+        taskScenario.setBorder(BorderFactory.createLineBorder(Color.WHITE,2));
+        main.add(taskScenario);
+
+        // 수행될 작업 목록: Tasks Scenario Queue
         JTextArea taskText = new JTextArea();
         JScrollPane taskPane = new JScrollPane(taskText);
-        taskPane.setBounds(westElementsLocationX, titleHeight + btnHeight + margin*2, btnWidth*2+margin, height/3);
+        taskPane.setBounds(westElementsLocationX, titleHeight + btnHeight/2*3 + margin*2, btnWidth*2+margin, height/3 - btnHeight/2);
         main.add(taskPane);
 
         taskText.setEditable(false);
@@ -115,7 +120,6 @@ public class MainFrame extends JFrame {
         taskText.setFont(new Font("Gadugi", 1, fontSize-6));
         taskText.setForeground(new Color(255, 255, 255));
         taskText.setText(getString(taskQueue, true));
-
 
         // 버퍼 현황 표시
         int[] msgLabelLocation = {X-btnWidth/2-margin + radius, Y-btnHeight/2 - radius, X-btnWidth/2-margin + radius, Y-btnHeight/2 + radius,
@@ -138,34 +142,41 @@ public class MainFrame extends JFrame {
 
         int eastElementsLocationX = width/4*3; // 우측 요소들 x축 위치
 
+        // Start a task 버튼
         JButton startButton = btnSetter("Start a task", 0,0);
         startButton.setBounds(eastElementsLocationX, titleHeight + margin, btnWidth*2 + margin*3, btnHeight);
         main.add(startButton);
 
+        // Produced 버튼: 진행중인 생산 작업 완료
         JButton finish_producing = btnSetter("Produced",0,0);
         finish_producing.setBounds(eastElementsLocationX, titleHeight+btnHeight+margin*2, btnWidth + margin, btnHeight);
         main.add(finish_producing);
+
+        // Consumed 버튼: 진행중인 소비 작업 완료
         JButton finish_consuming = btnSetter("Consumed", 0,0);
         finish_consuming.setBounds(eastElementsLocationX+btnWidth + margin*2, titleHeight+btnHeight+margin*2, btnWidth + margin, btnHeight);
         main.add(finish_consuming);
 
-
+        // "in" 라벨
         JLabel in = new JLabel();
         in = labelSetter(in, "in", fontSize);
         in.setBounds(eastElementsLocationX, titleHeight + btnHeight*3, btnWidth, btnHeight);
         main.add(in);
 
+        // input value
         inValue = new JLabel();
         inValue = labelSetter(inValue, "", fontSize);
         inValue.setBounds(eastElementsLocationX, titleHeight + btnHeight*4, btnWidth, btnHeight/2*3);
         inValue.setBorder(BorderFactory.createLineBorder(Color.WHITE,2));
         main.add(inValue);
 
+        // "out" 라벨
         JLabel out = new JLabel();
         out = labelSetter(out, "out", fontSize);
         out.setBounds(eastElementsLocationX + btnWidth + margin*3, titleHeight + btnHeight*3, btnWidth, btnHeight);
         main.add(out);
 
+        // output value
         outValue = new JLabel();
         outValue = labelSetter(outValue, "", fontSize);
         outValue.setBounds(eastElementsLocationX + btnWidth + margin*3, titleHeight + btnHeight*4, btnWidth, btnHeight/2*3);
@@ -280,41 +291,46 @@ public class MainFrame extends JFrame {
         }); // 버퍼 상태 변화시 gui 갱신
 
 
-        produceButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-            taskText.setText(getString(taskQueue, true)); //task gui 갱신
-        }
+        produceButton.addActionListener(new ActionListener() { // 생산 작업 추가
+            public void actionPerformed(ActionEvent e) {
+                taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
+                taskText.setText(getString(taskQueue, true)); //task gui 갱신
+            }
         });
 
-        consumeButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-            taskText.setText(getString(taskQueue, true)); //task gui 갱신
-        }
+        consumeButton.addActionListener(new ActionListener() { // 소비 작업 추가
+            public void actionPerformed(ActionEvent e) {
+                taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
+                taskText.setText(getString(taskQueue, true)); //task gui 갱신
+            }
         });
         
-        finish_producing.addActionListener(new ActionListener() {
+        finish_producing.addActionListener(new ActionListener() { // 생산 작업 끝내기
             public void actionPerformed(ActionEvent e){
                 if(mainBuffer.producerIsInside())
                     mainBuffer.finishProducing();
             }
         });
-        finish_consuming.addActionListener(new ActionListener() {
+        finish_consuming.addActionListener(new ActionListener() { // 소비 작업 끝내기
             public void actionPerformed(ActionEvent e){
                 if(mainBuffer.consumerIsInside())
                 mainBuffer.finishConsuming();
             }
         });
-        startButton.addActionListener(new ActionListener() {
+        startButton.addActionListener(new ActionListener() { // task 시작
         public void actionPerformed(ActionEvent e) {
             if (!taskQueue.isEmpty()) {
-                String taskPerformer = taskQueue.poll();
+                String taskPerformer = taskQueue.poll(); // task 하나를 꺼냄
                 taskText.setText(getString(taskQueue, true)); //task gui 갱신
-                if (taskPerformer.contains(CircularBuffer.PRODUCER)) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        taskPane.getVerticalScrollBar().setValue(0);
+                    }
+                }); // taskQueue의 스크롤을 맨 위로
+                if (taskPerformer.contains(CircularBuffer.PRODUCER)) { // 꺼낸 task가 생산
                     Thread produce = new Thread(new Produce(mainBuffer, taskPerformer));
                     produce.start();
-                } else if (taskPerformer.contains(CircularBuffer.CONSUMER)) {
+                } else if (taskPerformer.contains(CircularBuffer.CONSUMER)) { // 꺼낸 task가 소비
                     Thread consume = new Thread(new Consume(mainBuffer, taskPerformer));
                     consume.start();
                 }
@@ -337,6 +353,7 @@ public class MainFrame extends JFrame {
     }
     
     private JLabel labelSetter(JLabel label, String text, int font){
+        // 라벨 gui 기본 설정
         label.setFont(new Font("Gadugi", 1, font));
         label.setForeground(new Color(255, 255, 255));
         label.setText(text);
@@ -371,7 +388,7 @@ public class MainFrame extends JFrame {
     }
 
     @Override
-    public void paint(Graphics g) {
+    public void paint(Graphics g) { // 원형 버퍼 그리기
         super.paint(g);
         g.setColor(Color.WHITE);
         g.fillArc(X-radius,Y-radius,diameter,diameter,0,360);
@@ -414,5 +431,3 @@ public class MainFrame extends JFrame {
         return resultString;
     }
 }
-
-
