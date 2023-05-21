@@ -122,13 +122,14 @@ public class MainFrame extends JFrame {
         taskText.setText(getString(taskQueue, true));
 
         // 버퍼 현황 표시
-        int[] msgLabelLocation = {X-btnWidth/2-margin + radius, Y-btnHeight/2 - radius, X-btnWidth/2-margin + radius, Y-btnHeight/2 + radius,
-        X-btnWidth/2-margin - radius, Y-btnHeight/2 + radius, X-btnWidth/2-margin - radius, Y-btnHeight/2 - radius};
+        int[] msgLabelLocation = {X-margin*2 + radius, Y/10*9 - radius, X-margin*2 + radius, Y/10*9 + radius-margin,
+        X-margin*6 - radius, Y/10*9 + radius-margin, X-margin*6 - radius, Y/10*9 - radius};
         msgLabel = new JLabel[4];
         for(int i = 0; i < 4; i++){
             msgLabel[i] = new JLabel();
-            msgLabel[i] = labelSetter(msgLabel[i], null, fontSize);
+            msgLabel[i] = labelSetter(msgLabel[i], "A["+i+"]  "+mainBuffer.getBufferValue(i), fontSize);
             msgLabel[i].setBounds(msgLabelLocation[i*2], msgLabelLocation[i*2 +1], btnWidth, btnHeight/2);
+            msgLabel[i].setHorizontalAlignment(JLabel.LEFT);
             main.add(msgLabel[i]);
         }
 
@@ -364,7 +365,7 @@ public class MainFrame extends JFrame {
     public void renew(){ // 갱신
 
         for(int i = 0; i < 4; i++){
-            msgLabel[i].setText(mainBuffer.getBufferValue(i));
+            msgLabel[i].setText("A["+i+"]  "+mainBuffer.getBufferValue(i));
         }   // mainBuffer 값 갱신
 
         String ongoing = ""; // 버퍼에 생산자/소비자 있는지 여부 갱신
@@ -414,7 +415,12 @@ public class MainFrame extends JFrame {
         g.drawLine(X-radius, Y, X+radius, Y);   // 버퍼의 가로 선
         g.drawArc(X-radius, Y-radius, diameter, diameter, 0, 360);
 
-        g.setColor(Color.WHITE);
+        int smallDiameter = radius/4*3; // 내부 원 지름
+        g.setColor(Color.BLACK);
+        g.fillArc(X-smallDiameter/2, Y-smallDiameter/2, smallDiameter, smallDiameter, 0, 360);
+
+        g.setColor(Color.LIGHT_GRAY);
+        g.drawArc(X-smallDiameter/2, Y-smallDiameter/2, smallDiameter, smallDiameter, 0, 360);
     }
     
     public String getString(Queue<String> queue, boolean mode){
