@@ -1,0 +1,24 @@
+Producer_Kruskal
+Consumer_Dijkstra
+Consumer_Einstein
+Consumer_Carl Sagan
+Producer_Daniel
+Producer_Eric
+Producer_Kelly
+Producer_Kate
+Producer_IU
+Producer_Smith
+Producer_Amy
+Producer_Angella
+Consumer_Dorothy
+Producer_Edith
+Producer_Elizabethe
+Producer_Emma
+Consumer_Emmily
+Consumer_Esther
+Consumer_Ninave
+Consumer_Carmine
+Consumer_Aman
+Consumer_Silian
+Consumer_Azena
+Consumer_Inanna

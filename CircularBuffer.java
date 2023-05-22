@@ -21,8 +21,8 @@ public class CircularBuffer {
     private boolean _finishProducing = false; // true: 생산 작업 finish
     private boolean _finishConsuming = false; // true: 소비 작업 finish
     
-    private boolean _producerIsInside = false; // 생산자가 생산중인지
-    private boolean _consumerIsInside = false; // 소비자가 소비중인지
+    private String producerInside = null; // 생산중인 생산자
+    private String consumerInside = null; // 소비중인 소비자
 
     private List<ChangeListener> listeners; // buffer 변화를 MainFrame에서 감지
 
@@ -45,11 +45,11 @@ public class CircularBuffer {
     public int getTail(){
         return tail;
     }
-    public boolean producerIsInside(){
-        return _producerIsInside;
+    public String getProducerInside(){
+        return producerInside;
     }
-    public boolean consumerIsInside(){
-        return _consumerIsInside;
+    public String getConsumerInside(){
+        return consumerInside;
     }
 
     public String getBufferValue(int index){
@@ -133,7 +133,7 @@ public class CircularBuffer {
         }
 
         // C
-        _producerIsInside = true;
+        producerInside = producer.getName();
         String message = "m" + (int) (Math.random() * 100);
         buffer[head] = message;
         recentInputMessage = message;
@@ -148,7 +148,7 @@ public class CircularBuffer {
         System.out.println("Produced " + message);
 
         head = (head + 1) % buffer.length;
-        _producerIsInside = false;
+        producerInside = null;
         notifyListeners(); //생산이 끝남 (gui 갱신)
 
         OperationV(nrfull);
@@ -173,7 +173,7 @@ public class CircularBuffer {
         } // 소비할 상품 유무 검사
 
         // C
-        _consumerIsInside=true;
+        consumerInside=consumer.getName();
 
         String message = buffer[tail];
 
@@ -188,7 +188,7 @@ public class CircularBuffer {
 
         buffer[tail] = null;
         tail = (tail + 1) % buffer.length;
-        _consumerIsInside=false;
+        consumerInside=null;
         notifyListeners(); // 소비가 끝남 (gui 갱신)
 
         OperationV(nrempty);

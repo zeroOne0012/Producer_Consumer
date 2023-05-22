@@ -2,8 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException; //
 
 interface ChangeListener{ // 다중 원형 버퍼의 상태 변화 감지
     void somethingChanged();
@@ -12,7 +16,7 @@ public class MainFrame extends JFrame {
 
     private CircularBuffer mainBuffer; // 다중 원형 버퍼
 
-    private Queue<String> taskQueue;    // 시나리오 (tasks 큐)
+    private Queue<String> taskQueue;    // 시나리오 (tasks 큐) //
     private final int width = 1400;           // 실행 창 width
     private final int height = 800;           // 실행 창 height
     private final int fontSize = height/35;   // 폰트 크기
@@ -24,7 +28,6 @@ public class MainFrame extends JFrame {
     private int consumerNum = 1;    // task 이름 부여시 사용
 
     private JLabel[] msgLabel;      // 버퍼의 값 표시
-
     private JLabel ongoingTask;     // 버퍼에 생산/소비자 존재 여부
 
     private JLabel inValue;         // 
@@ -44,40 +47,15 @@ public class MainFrame extends JFrame {
     private final int X = width/2;
     private final int Y = height/2 - btnHeight; // 원의 좌표
 
-    private void initialTaskScenario(){ // 시나리오
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.PRODUCER + producerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-        taskQueue.add(CircularBuffer.CONSUMER + consumerNum++);
-    }
     public MainFrame() {
         mainBuffer = new CircularBuffer();
         taskQueue = new LinkedList<>();
 
-        initialTaskScenario(); // 주어진 시나리오 입력
-
+        try{
+            readTaskScenarioFile(taskQueue); // 주어진 시나리오 입력
+        } catch(IOException e){
+            e.printStackTrace();
+        }
         setTitle("Producer-Consumer simulation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(width, height);
@@ -97,8 +75,8 @@ public class MainFrame extends JFrame {
         
         // 작업 추가 버튼
         int westElementsLocationX = margin;
-        JButton produceButton = btnSetter("Producer", westElementsLocationX, titleHeight + margin);
-        JButton consumeButton = btnSetter("Consumer", westElementsLocationX + margin + btnWidth, titleHeight + margin);
+        JButton produceButton = btnSetter("+Producer", westElementsLocationX, titleHeight + margin);
+        JButton consumeButton = btnSetter("+Consumer", westElementsLocationX + margin + btnWidth, titleHeight + margin);
         main.add(produceButton);
         main.add(consumeButton);
 
@@ -133,10 +111,10 @@ public class MainFrame extends JFrame {
             main.add(msgLabel[i]);
         }
 
-        // "Producing..." or "Consuming..."
+        // 작업중인 생산/소비자 출력
         ongoingTask = new JLabel();
-        ongoingTask = labelSetter(ongoingTask, null, fontSize);
-        ongoingTask.setBounds(width-btnWidth*2-margin*4, margin*2, btnWidth*2 + margin*2, btnHeight/3*5);
+        ongoingTask = labelSetter(ongoingTask, null, fontSize-3);
+        ongoingTask.setBounds(width-btnWidth*4-margin*4, margin*2 - btnHeight/3*5, btnWidth*4 + margin*2, btnHeight/3*10);
         ongoingTask.setHorizontalAlignment(JLabel.RIGHT);
         main.add(ongoingTask);
         
@@ -149,13 +127,13 @@ public class MainFrame extends JFrame {
         main.add(startButton);
 
         // Produced 버튼: 진행중인 생산 작업 완료
-        JButton finish_producing = btnSetter("Produced",0,0);
-        finish_producing.setBounds(eastElementsLocationX, titleHeight+btnHeight+margin*2, btnWidth + margin, btnHeight);
+        JButton finish_producing = btnSetter("<html><center>Finish<br>Production</html>",0,0);
+        finish_producing.setBounds(eastElementsLocationX, titleHeight+btnHeight+margin*2, btnWidth + margin, btnHeight/4*5);
         main.add(finish_producing);
 
         // Consumed 버튼: 진행중인 소비 작업 완료
-        JButton finish_consuming = btnSetter("Consumed", 0,0);
-        finish_consuming.setBounds(eastElementsLocationX+btnWidth + margin*2, titleHeight+btnHeight+margin*2, btnWidth + margin, btnHeight);
+        JButton finish_consuming = btnSetter("<html><center>Finish<br>Consumption</html>", 0,0);
+        finish_consuming.setBounds(eastElementsLocationX+btnWidth + margin*2, titleHeight+btnHeight+margin*2, btnWidth + margin, btnHeight/4*5);
         main.add(finish_consuming);
 
         // "in" 라벨
@@ -308,13 +286,13 @@ public class MainFrame extends JFrame {
         
         finish_producing.addActionListener(new ActionListener() { // 생산 작업 끝내기
             public void actionPerformed(ActionEvent e){
-                if(mainBuffer.producerIsInside())
+                if(mainBuffer.getProducerInside()!=null)
                     mainBuffer.finishProducing();
             }
         });
         finish_consuming.addActionListener(new ActionListener() { // 소비 작업 끝내기
             public void actionPerformed(ActionEvent e){
-                if(mainBuffer.consumerIsInside())
+                if(mainBuffer.getConsumerInside()!=null)
                 mainBuffer.finishConsuming();
             }
         });
@@ -369,8 +347,8 @@ public class MainFrame extends JFrame {
         }   // mainBuffer 값 갱신
 
         String ongoing = ""; // 버퍼에 생산자/소비자 있는지 여부 갱신
-        if(mainBuffer.producerIsInside()) ongoing += " Producing...";
-        if(mainBuffer.consumerIsInside()) ongoing += " Consuming...";
+        if(mainBuffer.getProducerInside()!=null) ongoing += "     " + mainBuffer.getProducerInside() + " is in";
+        if(mainBuffer.getConsumerInside()!=null) ongoing += "     " + mainBuffer.getConsumerInside() + " is in";
         ongoingTask.setText(ongoing);
 
         mutexPState.setText(mainBuffer.getMutexP().getState()); // mutexP 갱신
@@ -401,11 +379,11 @@ public class MainFrame extends JFrame {
                 g.fillArc(X-radius,Y-radius,diameter,diameter,i*(-90),90);
             }
         }
-        if(mainBuffer.producerIsInside()){ // 생산중인 공간 채색
+        if(mainBuffer.getProducerInside()!=null){ // 생산중인 공간 채색
             g.setColor(Color.DARK_GRAY);
             g.fillArc(X-radius,Y-radius,diameter,diameter,mainBuffer.getHead()*(-90),90);
         }
-        if(mainBuffer.consumerIsInside()){ // 소비중인 공간 채색
+        if(mainBuffer.getConsumerInside()!=null){ // 소비중인 공간 채색
             g.setColor(Color.GRAY);
             g.fillArc(X-radius,Y-radius,diameter,diameter,mainBuffer.getTail()*(-90),90);
         }
@@ -422,7 +400,15 @@ public class MainFrame extends JFrame {
         g.setColor(Color.LIGHT_GRAY);
         g.drawArc(X-smallDiameter/2, Y-smallDiameter/2, smallDiameter, smallDiameter, 0, 360);
     }
-    
+    //
+    private void readTaskScenarioFile(Queue<String> queue) throws IOException{ // 시나리오 읽기
+        try(BufferedReader br = new BufferedReader(new FileReader("Scenario.txt"))){
+            String line;
+            while((line = br.readLine()) != null){
+                queue.add(line);
+            }
+        }
+    }
     public String getString(Queue<String> queue, boolean mode){
         // String queue를 하나의 String으로
         // mode==true: 세로, mode==false: 가로
@@ -432,7 +418,7 @@ public class MainFrame extends JFrame {
             if(mode)
                 resultString += "\n";
             else
-                resultString += "   ";
+                resultString += "    ";
         }
         return resultString;
     }
